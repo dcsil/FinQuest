@@ -3,7 +3,7 @@
 ![Ram Raghav Profile](./ramraghav_sharma.jpg)
 
 - Engineer
-- ramraghav.sharma@mail.utoronto.co
+- ramraghav.sharma@mail.utoronto.ca
 
 ## Links
 
