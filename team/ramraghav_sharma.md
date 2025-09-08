@@ -15,7 +15,7 @@
 
 I'm a fourth year computer science student interested in machine learning research and engineering. 
 
-I'm currently working and a researcher at the Toronto Intelligent Systems lab on ML research for robotics. I've also worked as an ML Engineer at Whatnot (YC W20) and Shopify. 
+I'm currently working as a researcher at the Toronto Intelligent Systems lab on ML research for robotics. I've also worked as an ML Engineer at Whatnot (YC W20) and Shopify. 
 
 
 ## Strengths
