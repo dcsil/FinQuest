@@ -1,22 +1,52 @@
-# Team Repo Template
+# CODE 418
 
-This Repository includes a template for your Team's Repository. https://github.com/dcsil/klutch is a good example of an implementation of this!
+![CODE 418 Logo](./logo.png)
 
-**README template starts below this line 👇👇👇 Delete above this line :)**
+## Table of Contents
 
-# COMPANY NAME
-
-![Team Logo](./logo.png)
-
-#### Team Slack Channel: #team\-\<your\-company\-name\-here\>
-
-COMPANY NAME is a company founded in the THEME industry. COMPANY NAME aims to VISION STATEMENT.
-
-Table of Contents
----
-
+- [What is CODE 418?](#what-is-code-418)
+- [High-Level Architecture](#high-level-architecture)
+- [Getting Started](#getting-started)
+- [Deployment](#deployment)
+- [Tech Stack](#tech-stack)
+- [Troubleshooting](#troubleshooting)
+- [Resources](#resources)
 - [People](./team/)
 - [Diversity](./team/diversity.md)
 - [Product & Research](./product_research/)
-    - [Market](./product_research/market.md)
-    - [Roadmap](./product_research/roadmap.md)
+  - [Market](./product_research/market.md)
+  - [Roadmap](./product_research/roadmap.md)
+
+## What is CODE 418?
+
+CODE 418 is a company founded in the software development industry. We aim to build impact software that solves real-world problems and create meaningful value.
+
+#### Team Slack/Discord Channel: #team\-code-418 (TBD)
+
+## High-Level Architecture
+
+TBD
+
+[Architecture Diagram](./architecture/diagram.md)
+
+[Architecture Decision Records](./architecture/adrs/)
+
+## Getting Started
+
+TBD
+
+## Deployment
+
+TBD
+
+## Tech Stack
+
+TBD
+
+## Troubleshooting
+
+TBD
+
+## Resources
+
+TBD
