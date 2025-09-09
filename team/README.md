@@ -11,7 +11,7 @@ People at Code 418
 ### Team Leader
 
 <!-- Describe who and why the team leader was selected --> 
-[Jane Doe, Engineering](./jane_doe.md) was selected to be the team leader on account of volunteering ownership on the responsibility below, on top of standard responsibilities.
+[Jane Doe, Engineering](./jane_doe.md) was selected as team leader for volunteering to take ownership of the responsibilities below, in addition to standard team member duties.
 
 #### Responsibilities
 <!-- What is their role for your team?	--> 
