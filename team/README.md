@@ -3,10 +3,10 @@
 People at Code 418
 ---
 
-- [Jason Wang, Engineering + whatever else is needed](./jason_wang.md)
-- [Saket Rane, Engineering + whatever else is needed](./saket_rane.md)
-- [Ram Raghav Sharma, Engineering + whatever else is needed](./ramraghav_sharma.md)
-- [Roy, Engineering + whatever else is needed](./roy_bernstein.md)
+- [Jason Wang, Engineering + Design + Business](./jason_wang.md)
+- [Saket Rane, Engineering + Product + Business](./saket_rane.md)
+- [Ram Raghav Sharma, Engineering + Product + Business](./ramraghav_sharma.md)
+- [Roy, Engineering + Finance + Business](./roy_bernstein.md)
 
 ### Team Leader
 
