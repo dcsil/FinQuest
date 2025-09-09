@@ -20,7 +20,7 @@ He currently works as a researcher at the Toronto Intelligent Systems lab on ML 
 
 ## Strengths
 
-- Strong opinions about products and always has something to complain about in apps I use.
+- Strong opinions about products and always has something to complain about in apps he uses.
 - Gets stuff done.
 
 ## Weaknesses
