@@ -1,10 +1,12 @@
-[COMPANY NAME Principles](./principles.md)
+[Code 418 Principles](./principles.md)
 
-People at COMPANY NAME
+People at Code 418
 ---
 
-- [Jane Doe, Engineering](./jane_doe.md)
-- ...
+- [Jason Wang, Engineering + whatever else is needed](./jason_wang.md)
+- [Saket Rane, Engineering + whatever else is needed](./saket_rane.md)
+- [Ram Raghav Sharma, Engineering + whatever else is needed](./ramraghav_sharma.md)
+- [Roy, Engineering + whatever else is needed](./roy_bernstein.md)
 
 ### Team Leader
 
