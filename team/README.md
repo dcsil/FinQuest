@@ -1,5 +1,7 @@
 [Code 418 Principles](./principles.md)
 
+[Diversity](./diversity.md)
+
 People at Code 418
 ---
 
