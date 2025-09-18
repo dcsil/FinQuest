@@ -18,7 +18,11 @@ Subject matter experts (SMEs) who can help us address our expertise gaps are UX 
 
 ## Diversity
 
-Our team has a varied background, but we acknowledge that we do not have people experienced in design, accessibility, or HCI, nor do we currently have representation from women, non-binary members, people from other age groups, or people with lived experience of disability. We also share similar educational paths through STEM fields, so we lack voices from the arts, humanities, or social sciences who could bring different approaches to problem-solving. Recognizing these gaps helps us stay mindful of the perspectives we might miss and encourages us to actively seek input from people unlike ourselves.
+Our team has a varied background, but we acknowledge that we lack diversity in specific areas.
+
+First, we currently have no representation from women, non-binary members, people from other age groups, or people with lived experience of disability.
+
+Beyond these visible dimensions, we do not have people experienced in design, accessibility, or HCI. We also share similar educational paths through STEM fields, so we lack voices from the arts, humanities, or social sciences who could bring different approaches to problem-solving. Recognizing these gaps helps us stay mindful of the perspectives we might miss and encourages us to actively seek input from people unlike ourselves.
 
 ### How this can impact us
 
