@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { AppState, Gamification, PracticeLot, Task } from '../types';
+import { AppState, PracticeLot, WatchlistItem } from '../types';
 import { mockData } from '../data';
 import { loadAppState, saveAppState } from '../utils/localStorage';
 import { updateStreak, checkForNewBadges, getXPReward } from '../utils';
@@ -9,7 +9,7 @@ type AppAction =
     | { type: 'COMPLETE_TASK'; taskId: string; taskType: string }
     | { type: 'UNDO_TASK'; taskId: string; taskType: string }
     | { type: 'ADD_PRACTICE_LOT'; practiceLot: PracticeLot }
-    | { type: 'ADD_TO_WATCHLIST'; ticker: string; item: any }
+    | { type: 'ADD_TO_WATCHLIST'; ticker: string; item: WatchlistItem }
     | { type: 'REMOVE_FROM_WATCHLIST'; ticker: string }
     | { type: 'UNLOCK_BADGE'; badge: string };
 
@@ -117,7 +117,7 @@ interface AppContextType {
     completeTask: (taskId: string, taskType: string) => void;
     undoTask: (taskId: string, taskType: string) => void;
     addPracticeLot: (practiceLot: PracticeLot) => void;
-    addToWatchlist: (ticker: string, item: any) => void;
+    addToWatchlist: (ticker: string, item: WatchlistItem) => void;
     removeFromWatchlist: (ticker: string) => void;
 }
 
@@ -160,7 +160,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         dispatch({ type: 'ADD_PRACTICE_LOT', practiceLot });
     };
 
-    const addToWatchlist = (ticker: string, item: any) => {
+    const addToWatchlist = (ticker: string, item: WatchlistItem) => {
         dispatch({ type: 'ADD_TO_WATCHLIST', ticker, item });
     };
 

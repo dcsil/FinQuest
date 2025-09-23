@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { Container, Title, Text, Group, Button, Table, Badge, ActionIcon, Drawer, Stack, Card, Divider } from "@mantine/core";
-import { IconPlus, IconEye, IconInfoCircle, IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
+import { IconPlus, IconEye, IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { calculatePositionValue, calculateDayChangeAbs, calculateDayChangePct, calculateTotalPL, formatCurrency, formatPercentage } from "../utils";
@@ -159,7 +159,6 @@ export default function Holdings() {
                                         const totalPL = calculateTotalPL(position);
                                         const practiceShares = getTotalPracticeShares(position.ticker);
                                         const practiceValue = getTotalPracticeValue(position.ticker);
-                                        const isInWatchlist = watchlist.some(item => item.ticker === position.ticker);
                                         const isPositive = dayChangeAbs >= 0;
 
                                         return (

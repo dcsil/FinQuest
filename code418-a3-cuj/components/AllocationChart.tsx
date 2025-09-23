@@ -67,7 +67,6 @@ const AllocationChart: React.FC<AllocationChartProps> = ({ positions, practiceLo
                     <PieChart
                         data={chartData}
                         size={180}
-                        thickness={40}
                         withTooltip
                         tooltipDataSource="segment"
                         withLabels
@@ -78,7 +77,7 @@ const AllocationChart: React.FC<AllocationChartProps> = ({ positions, practiceLo
                 </div>
 
                 <Stack gap="xs">
-                    {allocation.map((item, index) => (
+                    {allocation.map((item) => (
                         <Group key={item.category} justify="space-between">
                             <Group gap="xs">
                                 <div

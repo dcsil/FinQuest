@@ -1,7 +1,7 @@
 import React from 'react';
-import { AppShell, Navbar, Header, Text, Group, Button, Burger, Drawer, useMantineTheme, useMantineColorScheme, rem } from '@mantine/core';
+import { AppShell, Text, Group, Button, Burger, Drawer, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconHome, IconWallet, IconEye, IconNews, IconChecklist, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
+import { IconHome, IconWallet, IconEye, IconNews, IconChecklist, IconUser } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -20,8 +20,6 @@ const navigation = [
 
 const AppShellComponent: React.FC<AppShellProps> = ({ children }) => {
     const [opened, { toggle, close }] = useDisclosure();
-    const theme = useMantineTheme();
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
     const router = useRouter();
 
     const navItems = navigation.map((item) => (

@@ -51,7 +51,7 @@ const TodaysTasks: React.FC<TodaysTasksProps> = ({ tasks, completedTasks }) => {
                 <Group>
                     <IconChecklist size={24} color="blue" />
                     <Text size="lg" fw={600}>
-                        Today's Tasks
+                        Today&apos;s Tasks
                     </Text>
                 </Group>
                 <Badge color="blue" variant="light">

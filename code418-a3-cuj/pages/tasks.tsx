@@ -262,7 +262,7 @@ export default function Tasks() {
                                 🎉 Congratulations! 🎉
                             </Text>
                             <Text size="md" c="green" ta="center" maw={400}>
-                                You've completed all available tasks! Great job staying consistent with your financial education.
+                                You&apos;ve completed all available tasks! Great job staying consistent with your financial education.
                             </Text>
                             <Group gap="md" mt="md">
                                 <Button

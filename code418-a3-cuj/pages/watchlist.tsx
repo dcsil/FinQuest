@@ -50,7 +50,7 @@ export default function Watchlist() {
                             Your Watchlist 👁️
                         </Title>
                         <Text size="sm" c="dimmed" mt="xs">
-                            Track stocks and ETFs you're interested in
+                            Track stocks and ETFs you&apos;re interested in
                         </Text>
                     </div>
                     <Badge color="blue" variant="light" size="lg">
@@ -194,7 +194,7 @@ export default function Watchlist() {
                         {watchlist.length >= 20 && (
                             <Alert color="orange" variant="light">
                                 <Text size="sm">
-                                    You've reached the maximum watchlist size. Remove some items to add new ones.
+                                    You&apos;ve reached the maximum watchlist size. Remove some items to add new ones.
                                 </Text>
                             </Alert>
                         )}

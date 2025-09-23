@@ -29,7 +29,7 @@ export default function Dashboard() {
                             Good morning, {user.name}! 👋
                         </Title>
                         <Text size="sm" c="dimmed" mt="xs">
-                            Here's your 5-minute daily check-in
+                            Here&apos;s your 5-minute daily check-in
                         </Text>
                     </div>
                     <Group>
