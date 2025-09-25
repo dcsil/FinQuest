@@ -22,7 +22,7 @@
 
 ---
 
-## 🎯 Goal  
+## 🎯 Goal  (1)
 
 As a third year CS student, I want to build a working dashboard for our finance-learning product, so that I can validate the idea with a tangible prototype and propose concrete improvements.  
 
@@ -80,7 +80,7 @@ This CUJ showed both the promise and the pain of our workflow. We successfully b
 
 The most important takeaway is that the prototype exists. We moved from concept to something real, and in doing so, learned exactly where the bottlenecks are. Those lessons will guide our next steps: refining our dev setup, choosing tools more deliberately, and treating AI as a helper rather than a shortcut.  
 
-### Lessons Learned & Next Steps  
+### Lessons Learned & Next Steps  (2)
 
 - **AI-assisted coding saves time but creates technical debt.**  
   Next time we’ll use AI only for scaffolding boilerplate (e.g., routing, tab layout) and review every line before committing to reduce debugging overhead.  
@@ -99,7 +99,7 @@ The most important takeaway is that the prototype exists. We moved from concept 
 
 ---
 
-## 💡 Recommendations  
+## 💡 Recommendations  (4)
 
 **For the Product:**  
 - Better AI-Generated Code Quality: Add stricter type checking and lint passes to AI output before presenting it to the user.  
@@ -115,7 +115,7 @@ The most important takeaway is that the prototype exists. We moved from concept 
 
 ---
 
-## Highlights & Lowlights Table  
+## Highlights & Lowlights Table (3)
 
 | Task | Severity | Notes |
 |------|----------|-------|
