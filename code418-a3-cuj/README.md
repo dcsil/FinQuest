@@ -154,14 +154,14 @@ The most important takeaway is that the prototype exists. We moved from concept 
 | #  | Step Description | Screenshot |
 |----|------------------|------------|
 | 1  | Google NextJS setup command | ![Step 1](doc_images/image_1.png) |
-| 2  | Open command line and create NextJS application | ![Step 2](doc_images/image_2.png) |
-| 3  | Open IDE | ![Step 3](doc_images/image_3.png) |
-| 4  | Search for component libraries on Reddit | ![Step 4](doc_images/image_4.png) |
+| 2 (Switch) | Open command line and create NextJS application | ![Step 2](doc_images/image_2.png) |
+| 3 (Switch) | Open IDE | ![Step 3](doc_images/image_3.png) |
+| 4 (Switch) | Search for component libraries on Reddit | ![Step 4](doc_images/image_4.png) |
 | 5  | Find Mantine setup instructions | ![Step 5](doc_images/image_5.png) |
-| 6  | Install Mantine in NextJS app | ![Step 6](doc_images/image_6.png) |
-| 7  | Use LLM to generate components and pages for dummy page | ![Step 7](doc_images/image_7.png) |
-| 8  | Start development server to test front-end | ![Step 8](doc_images/image_8.png) |
-| 9  | Test front-end functionality by playing around in the browser | ![Step 9](doc_images/image_9.png) |
-| 10 | Lint and check code for typescript errors | ![Step 10](doc_images/image_10.png) |
+| 6 (Switch) | Install Mantine in NextJS app | ![Step 6](doc_images/image_6.png) |
+| 7 (Switch) | Use LLM to generate components and pages for dummy page | ![Step 7](doc_images/image_7.png) |
+| 8 (Switch)  | Start development server to test front-end | ![Step 8](doc_images/image_8.png) |
+| 9 (Switch)  | Test front-end functionality by playing around in the browser | ![Step 9](doc_images/image_9.png) |
+| 10 (Switch) | Lint and check code for typescript errors | ![Step 10](doc_images/image_10.png) |
 | 11 | Resolve linting errors | ![Step 11](doc_images/image_11.png) |
 | 12 | Push code to repository | ![Step 12](doc_images/image_12.png) |
