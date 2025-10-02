@@ -47,3 +47,67 @@ Every day that the user completes a learning module, a streak counter is increme
 <img width="771" height="470" alt="image" src="https://github.com/user-attachments/assets/ab777787-69bd-4962-b13a-51852d7d0b7b" />
 
 
+## Functional and Non-Functional Requirements
+
+### CUJ 1 — Portfolio Setup & Analytics
+
+**Functional Requirements**
+
+- FR1.1: User can open “Add Position” form from the Dashboard or Portfolio page.
+- FR1.2: Form includes fields for Ticker, Quantity, and Average Cost with inline validation.
+- FR1.3: On submission, the portfolio view updates immediately with the new position.
+- FR1.4: If form errors occur, clear error messages appear inline.
+- FR1.5: Portfolio page shows updated table of positions.
+- FR1.6: Analytics section displays portfolio totals, breakdowns, and trend chart.
+
+**Non-Functional Requirements**
+
+- Portfolio page should load in ≤2.5s with up to 100 positions.
+- Table and charts responsive for desktop and mobile.
+- Consistent typography/colors with design system.
+
+### CUJ 2 — Personalized Learning Pathway
+
+**Functional Requirements**
+
+- FR2.1: On first login, user sees a short onboarding quiz with multiple-choice questions.
+- FR2.2: Quiz UI shows progress indicator.
+- FR2.3: After quiz submission, a “Your Learning Pathway” screen displays recommended modules in sequence.
+- FR2.4: Module page displays learning content in sections.
+- FR2.5: End-of-module quiz supports multiple-choice answers with instant feedback.
+- FR2.6: On successful completion, a popup modal congratulates the user and shows a button to continue.
+
+**Non-Functional Requirements**
+
+- Module content loads in ≤1.5s.
+- Responsive layout for both desktop and mobile.
+- Progress is visually clear: completed modules marked, next module highlighted.
+
+### CUJ 3 — Adaptive AI Learning Suggestions
+
+**Functional Requirements**
+
+- FR3.1: Dashboard displays a “Personalized Suggestions” card with up to 3 suggestions.
+- FR3.2: Each suggestion shows a short title and a human-readable rationale.
+- FR3.3: Suggestions include a CTA button “Start Module” that deep-links to the module page.
+
+**Non-Functional Requirements**
+
+- Suggestions should render within 500ms after dashboard loads.
+- Always display a rationale for transparency.
+- Consistent with dashboard card styling (responsive, accessible).
+
+### CUJ 4 — Gamification
+
+**Functional Requirements**
+
+- FR4.1: When user completes a module for the day, streak counter increments visually (w/ animation).
+- FR4.2: A congratulatory modal appears with a celebratory message.
+- FR4.3: Dashboard displays current streak count with badge/icon.
+- FR4.4: Profile page shows streak history.
+- FR4.5: If user breaks streak, counter resets to zero.
+
+**Non-Functional Requirements**
+
+- Streak widget updates in ≤200ms after completion.
+- Consistent celebratory design with other UI elements.
