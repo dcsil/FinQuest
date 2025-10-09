@@ -1,9 +1,8 @@
-[Code 418 Principles](./principles.md)
+[FinQuest Principles](./principles.md)
 
 [Diversity](./diversity.md)
 
-People at Code 418
----
+## People at FinQuest
 
 - [Jason Wang, Engineering + Design + Business](./jason_wang.md)
 - [Saket Rane, Engineering + Product + Business](./saket_rane.md)
@@ -12,11 +11,14 @@ People at Code 418
 
 ### Team Leader
 
-<!-- Describe who and why the team leader was selected --> 
+<!-- Describe who and why the team leader was selected -->
+
 [Ram Raghav Sharma](./ramraghav_sharma.md) was selected as team leader for volunteering to take ownership of the responsibilities below, in addition to standard team member duties.
 
 #### Responsibilities
-<!-- What is their role for your team?	--> 
+
+<!-- What is their role for your team?	-->
+
 - Setting up team meetings.
 - Ensuring adherence to project timelines.
 - Promoting a collaborative team environment.
