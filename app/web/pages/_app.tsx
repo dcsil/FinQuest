@@ -5,6 +5,9 @@ import { createTheme, MantineProvider } from '@mantine/core';
 
 const theme = createTheme({
     /** Put your mantine theme override here */
+    primaryColor: 'blue',
+    fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+    defaultRadius: 'md',
 });
 
 export default function App({ Component, pageProps }: AppProps) {
