@@ -1,10 +1,12 @@
-# CODE 418
+# FinQuest
 
-![CODE 418 Logo](./logo.png)
+![FinQuest Logo](./logo.png)
+
+Formerly known as CODE418.
 
 ## Table of Contents
 
-- [What is CODE 418?](#what-is-code-418)
+- [What is FinQuest?](#what-is-finquest)
 <!-- - [High-Level Architecture](#high-level-architecture)
 - [Getting Started](#getting-started)
 - [Deployment](#deployment)
@@ -17,11 +19,11 @@
   - [Market](./product_research/market.md)
   - [Roadmap](./product_research/roadmap.md) -->
 
-## What is CODE 418?
+## What is FinQuest?
 
-CODE 418 is a company founded in the software development industry. We aim to build impact software that solves real-world problems and create meaningful value.
+FinQuest is a company founded in the software development industry. We aim to build a financial education platform with AI-powered insights and education designed for the next generation of investors.
 
-<!-- #### Team Slack/Discord Channel: #team\-code-418 (TBD)
+<!-- #### Team Slack/Discord Channel: #team\-finquest (TBD)
 
 ## High-Level Architecture
 
