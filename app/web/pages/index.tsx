@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import FinQuestLogo from "../assets/FinQuestLogo.png";
+import GradientBackground from "@/components/GradientBackground";
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -49,6 +50,7 @@ export default function Home() {
                     main: {
                         height: "100vh",
                         overflow: "hidden",
+                        position: "relative",
                     },
                 }}
             >
@@ -84,12 +86,15 @@ export default function Home() {
                 </AppShell.Header>
 
                 <AppShell.Main>
+                    <GradientBackground />
                     <Box
                         style={{
                             height: "calc(100vh - 70px)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            position: "relative",
+                            zIndex: 1,
                         }}
                     >
                         <Container size="md">
@@ -109,7 +114,6 @@ export default function Home() {
                                     </Title>
                                     <Text
                                         size="xl"
-                                        c="dimmed"
                                         ta="center"
                                         maw={800}
                                         style={{ lineHeight: 1.6 }}
