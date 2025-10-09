@@ -77,7 +77,10 @@ export default function Home() {
                             </Group>
                             <Group gap="md">
                                 <ColorSchemeToggle />
-                                <Button variant="filled">
+                                <Button variant="outline" component="a" href="/login">
+                                    Login
+                                </Button>
+                                <Button variant="filled" component="a" href="/onboarding">
                                     Sign Up
                                 </Button>
                             </Group>
@@ -123,7 +126,7 @@ export default function Home() {
                                         literacy today
                                     </Text>
                                 </Stack>
-                                <Button size="xl" variant="filled" mt={10} radius="lg">
+                                <Button size="xl" variant="filled" mt={10} radius="lg" component="a" href="/onboarding">
                                     Get Started for Free
                                 </Button>
                             </Stack>
