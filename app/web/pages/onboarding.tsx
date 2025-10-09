@@ -17,10 +17,14 @@ import {
     Select,
     useMantineColorScheme,
     rem,
+    Menu,
+    Avatar,
 } from "@mantine/core";
-import { IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowRight, IconArrowLeft, IconLogout, IconUser } from "@tabler/icons-react";
 import FinQuestLogo from "../assets/FinQuestLogo.png";
 import GradientBackground from "@/components/GradientBackground";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface OnboardingData {
     financialGoals: string;
@@ -64,10 +68,11 @@ const riskToleranceOptions = [
     "Aggressive",
 ];
 
-export default function Onboarding() {
+const Onboarding = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const { colorScheme } = useMantineColorScheme();
+    const { user, signOut } = useAuth();
 
     const [data, setData] = useState<OnboardingData>({
         financialGoals: "Saving for retirement",
@@ -284,7 +289,7 @@ export default function Onboarding() {
     };
 
     return (
-        <>
+        <ProtectedRoute>
             <Head>
                 <title>Onboarding - FinQuest</title>
                 <meta name="description" content="Complete your FinQuest profile setup" />
@@ -336,9 +341,41 @@ export default function Onboarding() {
                                         FinQuest
                                     </Text>
                                 </Group>
-                                <Text size="sm" c="dimmed">
-                                    Step {currentStep} of {totalSteps}
-                                </Text>
+                                <Group gap="sm">
+                                    <Text size="sm" c="dimmed">
+                                        Step {currentStep} of {totalSteps}
+                                    </Text>
+                                    <Menu shadow="md" width={200}>
+                                        <Menu.Target>
+                                            <Avatar
+                                                radius="xl"
+                                                size="sm"
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                {user?.email?.charAt(0).toUpperCase()}
+                                            </Avatar>
+                                        </Menu.Target>
+                                        <Menu.Dropdown>
+                                            <Menu.Label>
+                                                {user?.email}
+                                            </Menu.Label>
+                                            <Menu.Divider />
+                                            <Menu.Item
+                                                leftSection={<IconUser size={14} />}
+                                                onClick={() => alert('Profile coming soon!')}
+                                            >
+                                                Profile
+                                            </Menu.Item>
+                                            <Menu.Item
+                                                color="red"
+                                                leftSection={<IconLogout size={14} />}
+                                                onClick={signOut}
+                                            >
+                                                Sign out
+                                            </Menu.Item>
+                                        </Menu.Dropdown>
+                                    </Menu>
+                                </Group>
                             </Group>
 
                             {/* Progress Bar */}
@@ -382,6 +419,8 @@ export default function Onboarding() {
                     </Paper>
                 </Container>
             </Box>
-        </>
+        </ProtectedRoute>
     );
-}
+};
+
+export default Onboarding;

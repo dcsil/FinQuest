@@ -3,7 +3,7 @@ FinQuest API - Main FastAPI Application
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import health, api
+from .routers import health, api, auth
 from .config import settings
 
 # Create FastAPI app instance
@@ -26,6 +26,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, tags=["health"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(api.router, prefix="/api/v1", tags=["api"])
 
 

@@ -1,5 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 import {
     AppShell,
     Button,
@@ -15,6 +17,7 @@ import {
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import FinQuestLogo from "../assets/FinQuestLogo.png";
 import GradientBackground from "@/components/GradientBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -31,7 +34,17 @@ const ColorSchemeToggle = () => {
     );
 };
 
-export default function Home() {
+const Home = () => {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        // If user is authenticated, redirect to onboarding/dashboard
+        if (!loading && user) {
+            router.push('/onboarding');
+        }
+    }, [user, loading, router]);
+
     return (
         <>
             <Head>
@@ -80,7 +93,7 @@ export default function Home() {
                                 <Button variant="outline" component="a" href="/login">
                                     Login
                                 </Button>
-                                <Button variant="filled" component="a" href="/onboarding">
+                                <Button variant="filled" component="a" href="/signup">
                                     Sign Up
                                 </Button>
                             </Group>
@@ -126,7 +139,7 @@ export default function Home() {
                                         literacy today
                                     </Text>
                                 </Stack>
-                                <Button size="xl" variant="filled" mt={10} radius="lg" component="a" href="/onboarding">
+                                <Button size="xl" variant="filled" mt={10} radius="lg" component="a" href="/signup">
                                     Get Started for Free
                                 </Button>
                             </Stack>
@@ -136,4 +149,6 @@ export default function Home() {
             </AppShell>
         </>
     );
-}
+};
+
+export default Home;

@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
+    # Supabase Configuration
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+    SUPABASE_JWT_SECRET: str = ""
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
