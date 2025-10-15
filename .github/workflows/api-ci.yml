@@ -40,6 +40,13 @@ jobs:
       - name: Run linting
         run: uv run ruff check .
 
+      - name: Run tests
+        run: uv run pytest tests/ -v
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+
       - name: Test API startup
         run: |
           uv run python -c "from finquest_api.main import app; print('API imports successfully')"
