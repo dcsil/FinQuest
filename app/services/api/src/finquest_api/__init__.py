@@ -2,7 +2,6 @@
 FinQuest API Package
 """
 import uvicorn
-from .main import app
 
 __version__ = "0.1.0"
 
