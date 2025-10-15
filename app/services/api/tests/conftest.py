@@ -4,7 +4,7 @@ Pytest configuration and fixtures
 import os
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 # Set test environment variables before importing app
 os.environ['SUPABASE_URL'] = 'http://test.supabase.co'
