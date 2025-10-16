@@ -2,27 +2,20 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+For local development, you need to have [pnpm](https://pnpm.io/) installed.
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
+Then, run the development server:
+
+````bash
+pnpm dev
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Testing
 
@@ -32,25 +25,17 @@ This project uses [Vitest](https://vitest.dev/) and [React Testing Library](http
 
 ```bash
 # Run tests in watch mode
-npm run test
-# or
 pnpm test
 
 # Run tests once
-npm run test:run
-# or
 pnpm test:run
 
 # Run tests with UI
-npm run test:ui
-# or
 pnpm test:ui
 
 # Run tests with coverage
-npm run test:coverage
-# or
 pnpm test:coverage
-```
+````
 
 ### Writing Tests
 
@@ -84,8 +69,6 @@ describe("MyComponent", () => {
 });
 ```
 
-For detailed testing documentation, see [src/test/README.md](./src/test/README.md).
-
 ## End-to-End Testing
 
 This project uses [Playwright](https://playwright.dev/) for end-to-end testing to ensure the application works correctly across different browsers and user workflows.
@@ -94,23 +77,15 @@ This project uses [Playwright](https://playwright.dev/) for end-to-end testing t
 
 ```bash
 # Run all e2e tests
-npm run test:e2e
-# or
 pnpm test:e2e
 
 # Run tests with UI mode (interactive)
-npm run test:e2e:ui
-# or
 pnpm test:e2e:ui
 
 # Run tests in headed mode (see browser)
-npm run test:e2e:headed
-# or
 pnpm test:e2e:headed
 
 # Debug tests
-npm run test:e2e:debug
-# or
 pnpm test:e2e:debug
 
 # Run specific test file
