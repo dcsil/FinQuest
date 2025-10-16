@@ -143,6 +143,68 @@ When adding new e2e tests:
 - Keep tests independent and avoid dependencies between tests
 - Use meaningful test descriptions that explain the expected behavior
 
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for unit testing.
+
+### Running Tests
+
+```bash
+# Run tests in watch mode
+npm run test
+# or
+pnpm test
+
+# Run tests once
+npm run test:run
+# or
+pnpm test:run
+
+# Run tests with UI
+npm run test:ui
+# or
+pnpm test:ui
+
+# Run tests with coverage
+npm run test:coverage
+# or
+pnpm test:coverage
+```
+
+### Writing Tests
+
+Tests are located in the `src/test/` directory and follow these conventions:
+
+- **Component Tests**: Test React components in isolation
+- **Context Tests**: Test React context providers
+- **Utility Tests**: Test helper functions and utilities
+
+### Test Setup
+
+The testing infrastructure includes:
+
+- **Vitest**: Fast unit test framework with Vite integration
+- **React Testing Library**: Testing utilities focused on user behavior
+- **jsdom**: DOM environment for browser-like testing
+- **Mantine Provider**: Pre-configured for component styling
+- **Mocks**: Next.js router, Supabase client, and browser APIs
+
+### Example Test
+
+```tsx
+import { render, screen } from "../test-utils";
+import MyComponent from "@/components/MyComponent";
+
+describe("MyComponent", () => {
+  it("renders correctly", () => {
+    render(<MyComponent />);
+    expect(screen.getByText("Hello")).toBeInTheDocument();
+  });
+});
+```
+
+For detailed testing documentation, see [src/test/README.md](./src/test/README.md).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
