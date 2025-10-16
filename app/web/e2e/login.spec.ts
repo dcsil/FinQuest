@@ -76,7 +76,6 @@ test.describe('Login Flow', () => {
 
     // Wait for the error message to appear (this will depend on your auth implementation)
     // Note: This test assumes that invalid credentials will show an error message
-    // You may need to adjust this based on your actual error handling
     await expect(page.locator('[data-testid="error-message"], .mantine-Alert-root')).toBeVisible({ timeout: 10000 });
   });
 
@@ -110,12 +109,6 @@ test.describe('Login Flow', () => {
 
     // Click the Google login button
     await googleButton.click();
-
-    // Note: This test will depend on your Google OAuth implementation
-    // The button should be clickable and may redirect to Google's OAuth flow
-    // After clicking, the page might redirect or the button might become disabled
-    // We just verify that the click was successful by checking the button was clickable
-    // and that no JavaScript errors occurred
   });
 
   test('should show loading state during form submission', async ({ page }) => {
