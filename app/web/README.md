@@ -86,6 +86,88 @@ describe("MyComponent", () => {
 
 For detailed testing documentation, see [src/test/README.md](./src/test/README.md).
 
+## End-to-End Testing
+
+This project uses [Playwright](https://playwright.dev/) for end-to-end testing to ensure the application works correctly across different browsers and user workflows.
+
+### Running E2E Tests
+
+```bash
+# Run all e2e tests
+npm run test:e2e
+# or
+pnpm test:e2e
+
+# Run tests with UI mode (interactive)
+npm run test:e2e:ui
+# or
+pnpm test:e2e:ui
+
+# Run tests in headed mode (see browser)
+npm run test:e2e:headed
+# or
+pnpm test:e2e:headed
+
+# Debug tests
+npm run test:e2e:debug
+# or
+pnpm test:e2e:debug
+
+# Run specific test file
+npx playwright test login.spec.ts
+
+# Run tests in specific browser
+npx playwright test --project=chromium
+```
+
+### E2E Test Structure
+
+Tests are located in the `e2e/` directory and cover:
+
+- **Login Flow**: Complete authentication workflow including form validation, error handling, and navigation
+- **User Interactions**: Button clicks, form submissions, and navigation flows
+- **Cross-browser Testing**: Tests run on Chromium, Firefox, and WebKit
+- **Responsive Design**: Mobile viewport compatibility testing
+
+### E2E Test Configuration
+
+The tests are configured in `playwright.config.ts` with:
+
+- **Base URL**: `http://localhost:3000`
+- **Browsers**: Chromium, Firefox, and WebKit
+- **Auto-start**: Development server starts automatically before tests
+- **Parallel execution**: Tests run in parallel for faster execution
+- **Retry logic**: Failed tests retry on CI
+
+### CI Integration
+
+E2E tests are automatically run in GitHub Actions on:
+
+- Push to master branch (when web app files change)
+- Pull requests to master branch (when web app files change)
+
+The CI pipeline includes Playwright browser installation, test execution, and test report artifacts.
+
+### Writing E2E Tests
+
+When adding new e2e tests:
+
+1. Create test files in the `e2e/` directory with `.spec.ts` extension
+2. Use descriptive test names and group related tests with `test.describe()`
+3. Follow the existing patterns for page navigation and assertions
+4. Use `test.beforeEach()` for common setup
+5. Test both happy path and error scenarios
+6. Include accessibility and responsive design tests where relevant
+
+### E2E Testing Best Practices
+
+- Use semantic selectors (roles, labels) over CSS selectors when possible
+- Wait for elements to be visible/ready before interacting
+- Test user workflows end-to-end, not just individual components
+- Include both positive and negative test cases
+- Keep tests independent and avoid dependencies between tests
+- Use meaningful test descriptions that explain the expected behavior
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
