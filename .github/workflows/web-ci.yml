@@ -62,13 +62,6 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./app/web/coverage
-          flags: web-app
-          name: web-app-coverage
-
   lint-and-typecheck:
     runs-on: ubuntu-latest
     
