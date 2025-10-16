@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
+import { vi } from 'vitest'
 
 // Mock Next.js router
 const mockRouter = {

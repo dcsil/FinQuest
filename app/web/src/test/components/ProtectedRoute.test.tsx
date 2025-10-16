@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, mockRouter } from '../test-utils'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import type { User } from '@supabase/supabase-js'
 
 // Mock the AuthContext
 const mockAuthContext = {
-    user: null,
+    user: null as User | null,
     session: null,
     loading: false,
     signUp: vi.fn(),
@@ -54,7 +55,7 @@ describe('ProtectedRoute', () => {
 
     it('renders children when user is authenticated', () => {
         mockAuthContext.loading = false
-        mockAuthContext.user = { id: '1', email: 'test@example.com' } as any
+        mockAuthContext.user = { id: '1', email: 'test@example.com' } as User
 
         render(
             <ProtectedRoute>
@@ -68,7 +69,7 @@ describe('ProtectedRoute', () => {
 
     it('does not redirect when user is authenticated', () => {
         mockAuthContext.loading = false
-        mockAuthContext.user = { id: '1', email: 'test@example.com' } as any
+        mockAuthContext.user = { id: '1', email: 'test@example.com' } as User
 
         render(
             <ProtectedRoute>
