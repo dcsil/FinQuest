@@ -249,6 +249,7 @@ const Onboarding = () => {
                                 <Radio value="yes" label="Yes, I have experience" size="md" />
                             </Group>
                         </Radio.Group>
+                        {/* test */}
 
                         <Text size="sm" ta="center" c="dimmed" mt="md">
                             Based on your experience level: {data.investingExperience === 0 ? "Beginner" :

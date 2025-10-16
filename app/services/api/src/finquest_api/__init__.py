@@ -5,7 +5,7 @@ import uvicorn
 
 __version__ = "0.1.0"
 
-
+# test
 def main() -> None:
     """Run the FastAPI application"""
     uvicorn.run(
