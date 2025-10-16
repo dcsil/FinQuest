@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Container,
     Paper,
@@ -71,8 +71,13 @@ const riskToleranceOptions = [
 const Onboarding = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const { colorScheme } = useMantineColorScheme();
     const { user, signOut } = useAuth();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [data, setData] = useState<OnboardingData>({
         financialGoals: "Saving for retirement",
@@ -315,9 +320,10 @@ const Onboarding = () => {
                         miw={600}
                         p="xl"
                         style={{
-                            backgroundColor: colorScheme === "dark" ? "rgba(30, 30, 30, 0.9)" : "rgba(255, 255, 255, 0.95)",
+                            backgroundColor: (mounted && colorScheme === "dark") ? "rgba(30, 30, 30, 0.9)" : "rgba(255, 255, 255, 0.95)",
                             backdropFilter: "blur(10px)",
                             border: "1px solid rgba(255, 255, 255, 0.1)",
+                            transition: "background-color 0.2s ease",
                         }}
                     >
                         <Stack gap="lg">
