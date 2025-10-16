@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
     AppShell,
@@ -21,6 +21,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const isDark = colorScheme === "dark";
 
     return (
@@ -29,7 +35,7 @@ const ColorSchemeToggle = () => {
             onClick={() => setColorScheme(isDark ? "light" : "dark")}
             aria-label="Toggle color scheme"
         >
-            {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
+            {mounted ? (isDark ? <IconSun size={20} /> : <IconMoon size={20} />) : <IconMoon size={20} />}
         </ActionIcon>
     );
 };
