@@ -1,12 +1,38 @@
 /**
  * Application Navigation Component
  */
-import { AppShell, Group, Button, Text, Container, Menu, Avatar } from '@mantine/core';
-import { IconLogout, IconUser, IconWallet } from '@tabler/icons-react';
+import { useState, useEffect } from 'react';
+import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip } from '@mantine/core';
+import { useMantineColorScheme } from '@mantine/core';
+import { IconLogout, IconUser, IconWallet, IconSun, IconMoon } from '@tabler/icons-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import FinQuestLogo from '../assets/FinQuestLogo.png';
 import { useAuth } from '@/contexts/AuthContext';
+
+const ColorSchemeToggle = () => {
+    const { colorScheme, setColorScheme } = useMantineColorScheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isDark = colorScheme === 'dark';
+
+    return (
+        <Tooltip label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+            <ActionIcon
+                variant="subtle"
+                onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
+                aria-label="Toggle color scheme"
+                size="lg"
+            >
+                {mounted ? (isDark ? <IconSun size={20} /> : <IconMoon size={20} />) : <IconMoon size={20} />}
+            </ActionIcon>
+        </Tooltip>
+    );
+};
 
 export const AppNav = () => {
     const router = useRouter();
@@ -40,6 +66,7 @@ export const AppNav = () => {
                         >
                             Portfolio
                         </Button>
+                        <ColorSchemeToggle />
                         <Menu shadow="md" width={200}>
                             <Menu.Target>
                                 <Avatar

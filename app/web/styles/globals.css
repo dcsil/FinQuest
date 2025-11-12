@@ -1,0 +1,6 @@
+/* Global styles for dark mode card backgrounds */
+[data-mantine-color-scheme="dark"] .mantine-Card-root,
+[data-mantine-color-scheme="dark"] .mantine-Paper-root {
+    background-color: var(--mantine-color-dark-6) !important;
+}
+
