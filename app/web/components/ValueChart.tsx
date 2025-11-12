@@ -3,8 +3,8 @@
  */
 import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, subDays, startOfYear } from 'date-fns';
-import { ActionIcon, Tooltip as MantineTooltip, SegmentedControl, Group } from '@mantine/core';
+import { format } from 'date-fns';
+import { ActionIcon, Tooltip as MantineTooltip, SegmentedControl, Group, useMantineColorScheme } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
 import type { SnapshotPoint } from '@/types/portfolio';
 
@@ -17,12 +17,27 @@ interface ValueChartProps {
     onRangeChange?: (range: TimeRange) => void;
     defaultRange?: TimeRange;
     granularity?: 'hourly' | '6hourly' | 'daily' | 'weekly';
+    overlayValue?: number | string | null;
+    overlayPercentage?: number | null;
+    overlayCurrency?: string;
 }
 
-export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defaultRange = '1m', granularity = 'daily' }: ValueChartProps) => {
+export const ValueChart = ({
+    data,
+    baseCurrency,
+    onRefresh,
+    onRangeChange,
+    defaultRange = '1m',
+    granularity = 'daily',
+    overlayValue,
+    overlayPercentage,
+    overlayCurrency
+}: ValueChartProps) => {
+    const { colorScheme } = useMantineColorScheme();
     const [loading, setLoading] = useState(false);
     const [selectedRange, setSelectedRange] = useState<TimeRange>(defaultRange);
     const [isInitialMount, setIsInitialMount] = useState(true);
+    const isDark = colorScheme === 'dark';
 
     useEffect(() => {
         setSelectedRange(defaultRange);
@@ -158,6 +173,28 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
     const domainMax = maxValue + padding;
     const yAxisDomain = [domainMin, domainMax];
 
+    const formatCurrency = (value: number | string | null | undefined, currency: string) => {
+        if (value === null || value === undefined) return '~';
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numValue)) return '~';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency || 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(numValue);
+    };
+
+    const formatPercentage = (value: number | string | null | undefined) => {
+        if (value === null || value === undefined) return '~';
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numValue)) return '~';
+        const sign = numValue >= 0 ? '+' : '';
+        return `${sign}${numValue.toFixed(2)}%`;
+    };
+
+    const showOverlay = overlayValue !== undefined && overlayValue !== null;
+
     return (
         <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', position: 'relative' }}>
@@ -190,55 +227,90 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
                     )}
                 </Group>
             </div>
-            <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                    <XAxis
-                        dataKey="date"
-                        stroke="#888"
-                        tick={{ fill: '#9ca3af', fontSize: 11 }}
-                        axisLine={false}
-                        tickLine={false}
-                    />
-                    <YAxis
-                        tickFormatter={(value) => value.toLocaleString()}
-                        stroke="transparent"
-                        tick={{ fill: '#9ca3af', fontSize: 11 }}
-                        axisLine={false}
-                        tickLine={false}
-                        domain={yAxisDomain}
-                        width={70}
-                    />
-                    <Tooltip
-                        formatter={(value: number) => [`${baseCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
-                        labelFormatter={(label, payload) => {
-                            if (payload && payload[0]) {
-                                const tooltipFormat = getTooltipFormat(granularity);
-                                return format(new Date(payload[0].payload.fullDate), tooltipFormat);
-                            }
-                            return label;
-                        }}
-                        contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            padding: '10px 14px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                        }}
-                        labelStyle={{ fontWeight: 600, marginBottom: '6px', color: '#111827' }}
-                        itemStyle={{ color: '#2563eb', fontWeight: 500 }}
-                    />
-                    <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#2563eb"
-                        strokeWidth={2.5}
-                        dot={false}
-                        activeDot={{ r: 5, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
-                        animationDuration={300}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
+            <div style={{ position: 'relative' }}>
+                {showOverlay && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 20,
+                        left: 20,
+                        zIndex: 10,
+                        backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+                    }}>
+                        <div style={{
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            lineHeight: 1.2,
+                            color: isDark ? '#fff' : '#111827'
+                        }}>
+                            {formatCurrency(overlayValue, overlayCurrency || baseCurrency)}
+                        </div>
+                        {overlayPercentage !== undefined && overlayPercentage !== null && (
+                            <div style={{
+                                fontSize: '14px',
+                                color: Number(overlayPercentage) >= 0 ? '#16a34a' : '#dc2626',
+                                fontWeight: 500,
+                                marginTop: '4px'
+                            }}>
+                                {formatPercentage(overlayPercentage)}
+                            </div>
+                        )}
+                    </div>
+                )}
+                <ResponsiveContainer width="100%" height={400}>
+                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            stroke="#888"
+                            tick={{ fill: '#9ca3af', fontSize: 11 }}
+                            axisLine={false}
+                            tickLine={false}
+                        />
+                        <YAxis
+                            tickFormatter={(value) => value.toLocaleString()}
+                            stroke="transparent"
+                            tick={{ fill: '#9ca3af', fontSize: 11 }}
+                            axisLine={false}
+                            tickLine={false}
+                            domain={yAxisDomain}
+                            width={70}
+                        />
+                        <Tooltip
+                            formatter={(value: number) => [`${baseCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
+                            labelFormatter={(label, payload) => {
+                                if (payload && payload[0]) {
+                                    const tooltipFormat = getTooltipFormat(granularity);
+                                    return format(new Date(payload[0].payload.fullDate), tooltipFormat);
+                                }
+                                return label;
+                            }}
+                            contentStyle={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                padding: '10px 14px',
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                            }}
+                            labelStyle={{ fontWeight: 600, marginBottom: '6px', color: '#111827' }}
+                            itemStyle={{ color: '#2563eb', fontWeight: 500 }}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#2563eb"
+                            strokeWidth={2.5}
+                            dot={false}
+                            activeDot={{ r: 5, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                            animationDuration={300}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 };

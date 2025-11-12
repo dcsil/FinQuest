@@ -45,7 +45,7 @@ export const AppNav = () => {
     return (
         <AppShell.Header>
             <Container size="xl" h="100%">
-                <Group justify="space-between" h="100%">
+                <Group justify="space-between" h="100%" style={{ width: '100%' }}>
                     <Group gap="xs">
                         <Image
                             src={FinQuestLogo}
@@ -58,14 +58,21 @@ export const AppNav = () => {
                             FinQuest
                         </Text>
                     </Group>
-                    <Group gap="md">
+                    <Group gap="md" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
                         <Button
-                            variant="subtle"
-                            leftSection={<IconWallet size={16} />}
+                            variant={router.pathname === '/' || router.pathname === '/dashboard' ? 'light' : 'subtle'}
+                            onClick={() => router.push('/dashboard')}
+                        >
+                            Dashboard
+                        </Button>
+                        <Button
+                            variant={router.pathname === '/portfolio' ? 'light' : 'subtle'}
                             onClick={() => router.push('/portfolio')}
                         >
                             Portfolio
                         </Button>
+                    </Group>
+                    <Group gap="md">
                         <ColorSchemeToggle />
                         <Menu shadow="md" width={200}>
                             <Menu.Target>
