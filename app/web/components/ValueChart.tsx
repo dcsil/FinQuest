@@ -178,7 +178,7 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
                         />
                     )}
                     {onRefresh && (
-                        <MantineTooltip label="Generate snapshot">
+                        <MantineTooltip label="Refresh data">
                             <ActionIcon
                                 variant="subtle"
                                 onClick={handleRefresh}

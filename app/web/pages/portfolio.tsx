@@ -18,6 +18,7 @@ import {
     Loader,
     Alert,
     AppShell,
+    Skeleton,
 } from '@mantine/core';
 import { IconPlus, IconTrendingUp, IconTrendingDown, IconAlertCircle } from '@tabler/icons-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -29,10 +30,31 @@ import { portfolioApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
 import { format, subDays, startOfYear } from 'date-fns';
 
+/**
+ * Chart skeleton component for loading state
+ * Matches the layout of ValueChart component
+ */
+const ChartSkeleton = () => (
+    <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', position: 'relative' }}>
+            <Skeleton height={24} width={250} style={{ margin: '0 auto' }} />
+            <Group gap="xs" style={{ position: 'absolute', right: 0 }}>
+                <Skeleton height={32} width={180} radius="md" />
+                <Skeleton height={32} width={32} radius="md" />
+            </Group>
+        </div>
+        <div style={{ position: 'relative', height: 400 }}>
+            {/* Chart area skeleton */}
+            <Skeleton height={400} radius="md" />
+        </div>
+    </div>
+);
+
 const PortfolioPage = () => {
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [dialogOpened, setDialogOpened] = useState(false);
@@ -93,10 +115,23 @@ const PortfolioPage = () => {
             const rangeToUse = range || timeRange;
             const { from, to, granularity } = getDateRange(rangeToUse);
 
-            const data = await portfolioApi.getSnapshots(from, to, granularity);
-            setSnapshots(data.series);
+            setShowSnapshotsSkeleton(false);
+
+            // Set a timeout to show skeleton after 1 second
+            const skeletonTimeout = setTimeout(() => {
+                setShowSnapshotsSkeleton(true);
+            }, 1000);
+
+            try {
+                const data = await portfolioApi.getSnapshots(from, to, granularity);
+                setSnapshots(data.series);
+            } finally {
+                clearTimeout(skeletonTimeout);
+                setShowSnapshotsSkeleton(false);
+            }
         } catch (err) {
             console.error('Failed to load snapshots:', err);
+            setShowSnapshotsSkeleton(false);
         }
     }, [timeRange, getDateRange]);
 
@@ -210,24 +245,28 @@ const PortfolioPage = () => {
                             <Grid>
                                 <Grid.Col span={{ base: 12, md: 8 }}>
                                     <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <ValueChart
-                                            data={snapshots}
-                                            baseCurrency={baseCurrency}
-                                            defaultRange={timeRange}
-                                            granularity={getDateRange(timeRange).granularity as 'hourly' | '6hourly' | 'daily' | 'weekly'}
-                                            onRangeChange={(range) => {
-                                                setTimeRange(range);
-                                            }}
-                                            onRefresh={async () => {
-                                                try {
-                                                    // Simply refetch snapshots - missing ones will be auto-generated
-                                                    await loadSnapshots(timeRange);
-                                                } catch (err) {
-                                                    console.error('Failed to refresh snapshots:', err);
-                                                    throw err;
-                                                }
-                                            }}
-                                        />
+                                        {showSnapshotsSkeleton ? (
+                                            <ChartSkeleton />
+                                        ) : (
+                                            <ValueChart
+                                                data={snapshots}
+                                                baseCurrency={baseCurrency}
+                                                defaultRange={timeRange}
+                                                granularity={getDateRange(timeRange).granularity as 'hourly' | '6hourly' | 'daily' | 'weekly'}
+                                                onRangeChange={(range) => {
+                                                    setTimeRange(range);
+                                                }}
+                                                onRefresh={async () => {
+                                                    try {
+                                                        // Simply refetch snapshots - missing ones will be auto-generated
+                                                        await loadSnapshots(timeRange);
+                                                    } catch (err) {
+                                                        console.error('Failed to refresh snapshots:', err);
+                                                        throw err;
+                                                    }
+                                                }}
+                                            />
+                                        )}
                                     </Paper>
                                 </Grid.Col>
                                 <Grid.Col span={{ base: 12, md: 4 }}>

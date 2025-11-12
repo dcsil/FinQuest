@@ -536,7 +536,17 @@ def ensure_snapshots_for_range(
     # Find missing slots (within a small tolerance for time matching)
     missing_slots = []
     for slot in required_slots:
-        # Check if there's an existing snapshot within 1 minute of this slot
+        # First check for exact match (most important to avoid unique constraint violation)
+        exact_match = False
+        for existing_time in existing_times:
+            if slot == existing_time:
+                exact_match = True
+                break
+        
+        if exact_match:
+            continue
+        
+        # Then check if there's an existing snapshot within 1 minute of this slot
         found = False
         for existing_time in existing_times:
             time_diff = abs((slot - existing_time).total_seconds())
@@ -550,6 +560,16 @@ def ensure_snapshots_for_range(
     created_count = 0
     for slot in missing_slots:
         try:
+            # Double-check for exact match before inserting (race condition protection)
+            existing = db.query(PortfolioValuationSnapshot).filter(
+                PortfolioValuationSnapshot.portfolio_id == portfolio_id,
+                PortfolioValuationSnapshot.as_of == slot
+            ).first()
+            
+            if existing:
+                # Snapshot already exists at exact time, skip
+                continue
+            
             # Calculate portfolio value at this time
             total_value = calculate_portfolio_value_at_time(db, user, portfolio_id, slot)
             
@@ -567,8 +587,8 @@ def ensure_snapshots_for_range(
             )
             db.add(snapshot)
             created_count += 1
-        except Exception:
-            # Continue on error
+        except Exception as e:
+            # Continue on error (including unique constraint violations)
             db.rollback()
             continue
     
