@@ -2,7 +2,7 @@
  * Value Over Time Chart Component
  */
 import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, subDays, startOfYear } from 'date-fns';
 import { ActionIcon, Tooltip as MantineTooltip, SegmentedControl, Group } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
@@ -126,8 +126,8 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
     };
 
     const chartData = data.map((point) => {
-        const value = typeof point.totalValue === 'string' 
-            ? parseFloat(point.totalValue) 
+        const value = typeof point.totalValue === 'string'
+            ? parseFloat(point.totalValue)
             : point.totalValue;
         const dateFormat = getDateFormat(granularity);
         return {
@@ -135,7 +135,28 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
             value: Number(value.toFixed(2)),
             fullDate: point.asOf,
         };
-    });
+    }).sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+
+    // Calculate dynamic Y-axis domain based on data min/max
+    const values = chartData.map(d => d.value);
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const range = maxValue - minValue;
+
+    // Calculate padding: 10% of range, or at least 2% of max value
+    let padding: number;
+    if (range === 0) {
+        // All values are the same - add padding around the value
+        padding = Math.max(maxValue * 0.1, maxValue * 0.05, 50);
+    } else {
+        padding = Math.max(range * 0.1, maxValue * 0.02);
+    }
+
+    // Set domain with padding
+    // For positive values, start from a reasonable minimum (not necessarily 0)
+    const domainMin = minValue - padding;
+    const domainMax = maxValue + padding;
+    const yAxisDomain = [domainMin, domainMax];
 
     return (
         <div style={{ position: 'relative' }}>
@@ -170,14 +191,26 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
                 </Group>
             </div>
             <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                    <XAxis
+                        dataKey="date"
+                        stroke="#888"
+                        tick={{ fill: '#9ca3af', fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                    />
                     <YAxis
-                        tickFormatter={(value) => `${baseCurrency} ${value.toLocaleString()}`}
+                        tickFormatter={(value) => value.toLocaleString()}
+                        stroke="transparent"
+                        tick={{ fill: '#9ca3af', fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                        domain={yAxisDomain}
+                        width={70}
                     />
                     <Tooltip
-                        formatter={(value: number) => [`${baseCurrency} ${value.toLocaleString()}`, 'Value']}
+                        formatter={(value: number) => [`${baseCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
                         labelFormatter={(label, payload) => {
                             if (payload && payload[0]) {
                                 const tooltipFormat = getTooltipFormat(granularity);
@@ -185,14 +218,24 @@ export const ValueChart = ({ data, baseCurrency, onRefresh, onRangeChange, defau
                             }
                             return label;
                         }}
+                        contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            padding: '10px 14px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                        }}
+                        labelStyle={{ fontWeight: 600, marginBottom: '6px', color: '#111827' }}
+                        itemStyle={{ color: '#2563eb', fontWeight: 500 }}
                     />
-                    <Legend />
                     <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#0088FE"
-                        strokeWidth={2}
-                        name="Portfolio Value"
+                        stroke="#2563eb"
+                        strokeWidth={2.5}
+                        dot={false}
+                        activeDot={{ r: 5, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                        animationDuration={300}
                     />
                 </LineChart>
             </ResponsiveContainer>

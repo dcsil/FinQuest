@@ -209,7 +209,7 @@ const PortfolioPage = () => {
 
                             {/* Summary Cards */}
                             <Grid>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                                     <Card shadow="sm" padding="lg" radius="md" withBorder>
                                         <Text size="sm" color="dimmed">
                                             Total Value
@@ -219,20 +219,10 @@ const PortfolioPage = () => {
                                         </Text>
                                     </Card>
                                 </Grid.Col>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                                     <Card shadow="sm" padding="lg" radius="md" withBorder>
                                         <Text size="sm" color="dimmed">
-                                            Total Cost Basis
-                                        </Text>
-                                        <Text size="xl" fw={700} mt="xs">
-                                            {formatCurrency(totals.totalCostBasis, baseCurrency)}
-                                        </Text>
-                                    </Card>
-                                </Grid.Col>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                                    <Card shadow="sm" padding="lg" radius="md" withBorder>
-                                        <Text size="sm" color="dimmed">
-                                            Unrealized P/L
+                                            Unrealized Change
                                         </Text>
                                         <Group gap="xs" mt="xs">
                                             <Text
@@ -245,10 +235,10 @@ const PortfolioPage = () => {
                                         </Group>
                                     </Card>
                                 </Grid.Col>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                                     <Card shadow="sm" padding="lg" radius="md" withBorder>
                                         <Text size="sm" color="dimmed">
-                                            Daily P/L
+                                            Daily Change
                                         </Text>
                                         <Group gap="xs" mt="xs">
                                             {Number(totals.dailyPL) >= 0 ? (

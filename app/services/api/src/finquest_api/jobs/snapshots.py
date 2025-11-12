@@ -227,96 +227,136 @@ def calculate_required_time_slots(
 def get_historical_price(
     db: Session,
     instrument_id: UUID,
-    as_of: datetime
+    as_of: datetime,
+    fallback_to_latest: bool = True
 ) -> Optional[PriceRecord]:
     """
     Get historical price for an instrument at a specific time.
     Uses yfinance to fetch historical data.
+    If fallback_to_latest is True, falls back to latest price if historical data unavailable.
     """
     instrument = db.query(Instrument).filter(Instrument.id == instrument_id).first()
     if not instrument:
         return None
     
+    # Ensure as_of is timezone-aware (UTC)
+    if as_of.tzinfo is None:
+        as_of_utc = as_of.replace(tzinfo=timezone.utc)
+    else:
+        as_of_utc = as_of.astimezone(timezone.utc)
+    
     try:
         ticker = yf.Ticker(instrument.symbol)
-        
-        # Determine what data to fetch based on how far back as_of is
         now = datetime.now(timezone.utc)
-        time_diff = now - as_of.replace(tzinfo=timezone.utc) if as_of.tzinfo is None else now - as_of
+        time_diff = now - as_of_utc
         
-        # Ensure as_of is timezone-aware (UTC)
-        if as_of.tzinfo is None:
-            as_of_utc = as_of.replace(tzinfo=timezone.utc)
-        else:
-            as_of_utc = as_of.astimezone(timezone.utc)
-        
-        if time_diff < timedelta(days=1):
-            # For today, try intraday data (1-minute intervals)
-            hist = ticker.history(period="1d", interval="1m")
-            if not hist.empty:
-                # Find the closest price to as_of
-                # yfinance returns naive datetimes in market timezone, convert to UTC
-                as_of_naive = as_of_utc.replace(tzinfo=None)
-                hist_times = hist.index
-                # Find the closest time before or at as_of
-                closest_idx = None
-                for i, hist_time in enumerate(hist_times):
-                    # hist_time is naive, compare directly
-                    if hist_time <= as_of_naive:
-                        closest_idx = i
-                    else:
-                        break
-                
-                if closest_idx is not None:
-                    price = Decimal(str(hist.iloc[closest_idx]["Close"]))
-                    # Convert hist_time to UTC (assuming market timezone, but yfinance uses local)
-                    hist_time_utc = hist_times[closest_idx]
-                    if isinstance(hist_time_utc, datetime):
-                        # If it's already a datetime, assume it's in market timezone
-                        # For simplicity, treat as UTC (yfinance behavior varies)
-                        hist_time_utc = hist_time_utc.replace(tzinfo=timezone.utc)
-                    else:
-                        # If it's a timestamp, convert
-                        hist_time_utc = datetime.fromtimestamp(hist_time_utc.timestamp(), tz=timezone.utc)
+        # For very recent times (within last few hours), try intraday data first
+        if time_diff < timedelta(hours=6):
+            try:
+                hist = ticker.history(period="1d", interval="1m")
+                if not hist.empty and len(hist) > 0:
+                    # Get the latest available price (yfinance intraday may not have data for all times)
+                    # Use the most recent price before or at as_of
+                    as_of_naive = as_of_utc.replace(tzinfo=None)
+                    hist_times = hist.index
                     
-                    return PriceRecord(
-                        price=price,
-                        ts=hist_time_utc,
-                        day_change_abs=None,
-                        day_change_pct=None,
-                    )
+                    # Find the closest time before or at as_of
+                    closest_idx = None
+                    for i, hist_time in enumerate(hist_times):
+                        if hist_time <= as_of_naive:
+                            closest_idx = i
+                        else:
+                            break
+                    
+                    # If no price before as_of, use the first available price
+                    if closest_idx is None and len(hist) > 0:
+                        closest_idx = 0
+                    
+                    if closest_idx is not None:
+                        price = Decimal(str(hist.iloc[closest_idx]["Close"]))
+                        hist_time_utc = hist_times[closest_idx]
+                        if isinstance(hist_time_utc, datetime):
+                            hist_time_utc = hist_time_utc.replace(tzinfo=timezone.utc)
+                        else:
+                            hist_time_utc = datetime.fromtimestamp(hist_time_utc.timestamp(), tz=timezone.utc)
+                        
+                        return PriceRecord(
+                            price=price,
+                            ts=hist_time_utc,
+                            day_change_abs=None,
+                            day_change_pct=None,
+                        )
+            except Exception as e:
+                # If intraday fails, fall through to daily data
+                print(f"Warning: Failed to get intraday data for {instrument.symbol} at {as_of_utc}: {e}")
         
-        # For older data, use daily data
-        # Fetch enough data to cover the date
+        # For older data or if intraday fails, use daily data
         target_date = as_of_utc.date()
-        start_date = target_date - timedelta(days=5)
-        end_date = target_date + timedelta(days=1)
+        # Fetch more data to ensure we get something (go back further to handle weekends/holidays)
+        start_date = target_date - timedelta(days=60)
+        end_date = target_date + timedelta(days=2)  # Include next day to handle timezone differences
         
-        hist = ticker.history(start=start_date, end=end_date, interval="1d")
-        if not hist.empty:
-            # Find the closest date to as_of
-            closest_date = None
-            closest_price = None
-            
-            for idx, row in hist.iterrows():
-                hist_date = idx.date()
-                if hist_date <= target_date:
-                    closest_date = hist_date
-                    closest_price = row["Close"]
-                else:
-                    break
-            
-            if closest_price is not None:
-                price = Decimal(str(closest_price))
-                return PriceRecord(
-                    price=price,
-                    ts=datetime.combine(closest_date, time.min).replace(tzinfo=timezone.utc),
-                    day_change_abs=None,
-                    day_change_pct=None,
-                )
+        try:
+            hist = ticker.history(start=start_date, end=end_date, interval="1d")
+            if not hist.empty and len(hist) > 0:
+                # Find the closest date to as_of (on or before target_date)
+                # This handles weekends/holidays by using the last available trading day
+                closest_date = None
+                closest_price = None
+                
+                # Iterate through all rows to find the closest date <= target_date
+                for idx, row in hist.iterrows():
+                    hist_date = idx.date()
+                    if hist_date <= target_date:
+                        # Update to the most recent date <= target_date
+                        if closest_date is None or hist_date > closest_date:
+                            closest_date = hist_date
+                            closest_price = row["Close"]
+                
+                # If no price on or before target_date, use the most recent available
+                if closest_price is None and len(hist) > 0:
+                    # Use the most recent price available (even if it's after target_date)
+                    closest_date = hist.index[-1].date()
+                    closest_price = hist.iloc[-1]["Close"]
+                    print(f"Warning: Using future price for {instrument.symbol} at {target_date} (closest: {closest_date})")
+                
+                if closest_price is not None:
+                    try:
+                        # Check if price is valid (not NaN)
+                        price_float = float(closest_price)
+                        if price_float > 0:  # Valid price should be positive
+                            price = Decimal(str(price_float))
+                            return PriceRecord(
+                                price=price,
+                                ts=datetime.combine(closest_date, time.min).replace(tzinfo=timezone.utc),
+                                day_change_abs=None,
+                                day_change_pct=None,
+                            )
+                    except (ValueError, TypeError) as e:
+                        print(f"Warning: Invalid price for {instrument.symbol} on {closest_date}: {e}")
+        except Exception as e:
+            print(f"Warning: Failed to get daily data for {instrument.symbol} at {as_of_utc}: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Fallback to latest price if historical data unavailable
+        if fallback_to_latest:
+            try:
+                latest_price_record = get_latest_price(db, instrument_id)
+                if latest_price_record and latest_price_record.price:
+                    return latest_price_record
+            except Exception as e:
+                print(f"Warning: Failed to get latest price for {instrument.symbol}: {e}")
         
         return None
-    except Exception:
+    except Exception as e:
+        print(f"Error getting historical price for {instrument.symbol} at {as_of_utc}: {e}")
+        # Try fallback to latest price
+        if fallback_to_latest:
+            try:
+                return get_latest_price(db, instrument_id)
+            except Exception:
+                return None
         return None
 
 
@@ -330,15 +370,25 @@ def calculate_portfolio_value_at_time(
     Calculate portfolio total value at a specific historical time.
     Uses historical prices and FX rates.
     """
-    # Compute positions as of as_of (only transactions before as_of)
+    # Ensure as_of is timezone-aware for comparison
+    if as_of.tzinfo is None:
+        as_of_aware = as_of.replace(tzinfo=timezone.utc)
+    else:
+        as_of_aware = as_of
+    
+    # Compute positions as of as_of (only transactions before or at as_of)
+    # Note: SQLAlchemy handles timezone-aware datetime comparisons correctly
     transactions = db.query(Transaction).filter(
         Transaction.portfolio_id == portfolio_id,
         Transaction.deleted_at.is_(None),
-        Transaction.executed_at <= as_of
+        Transaction.executed_at <= as_of_aware
     ).order_by(Transaction.executed_at).all()
     
     if not transactions:
+        print(f"Warning: No transactions found for portfolio {portfolio_id} before {as_of_aware}")
         return Decimal("0")
+    
+    print(f"Calculating portfolio value at {as_of_aware} with {len(transactions)} transactions")
     
     # Compute positions using average cost method
     positions: dict[UUID, Decimal] = {}  # instrument_id -> quantity
@@ -389,23 +439,32 @@ def calculate_portfolio_value_at_time(
     for instrument_id, quantity in positions.items():
         instrument = instruments.get(instrument_id)
         if not instrument:
+            print(f"Warning: Instrument {instrument_id} not found")
             continue
         
-        # Get historical price
-        price_record = get_historical_price(db, instrument_id, as_of)
+        # Get historical price (with fallback to latest)
+        price_record = get_historical_price(db, instrument_id, as_of, fallback_to_latest=True)
         if not price_record or not price_record.price:
+            print(f"Warning: No price found for {instrument.symbol} at {as_of}")
             continue
         
-        # Get historical FX rate
+        # Get historical FX rate (with fallback to current rate)
         fx_rate = fx_at(db, instrument.currency, user.base_currency, as_of)
         if not fx_rate:
-            continue
+            # Fallback to current FX rate if historical not available
+            from ..services.fx import fx_now
+            fx_rate = fx_now(db, instrument.currency, user.base_currency)
+            if not fx_rate:
+                print(f"Warning: No FX rate found for {instrument.currency} to {user.base_currency}")
+                continue
         
         # Calculate value in base currency
         value_in_trade_ccy = quantity * price_record.price
         value_base = value_in_trade_ccy * fx_rate
         total_value += value_base
+        print(f"  {instrument.symbol}: {quantity} @ {price_record.price} {instrument.currency} * {fx_rate} = {value_base} {user.base_currency}")
     
+    print(f"Total portfolio value at {as_of}: {total_value} {user.base_currency}")
     return total_value
 
 
