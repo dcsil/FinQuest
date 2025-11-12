@@ -1,0 +1,105 @@
+/**
+ * API client for portfolio endpoints
+ */
+import { supabase } from './supabase';
+import type {
+    PostPositionRequest,
+    PostPositionResponse,
+    PortfolioHoldingsResponse,
+    SnapshotsResponse,
+} from '@/types/portfolio';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * Get authentication token from Supabase session
+ */
+const getAuthToken = async (): Promise<string | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+};
+
+/**
+ * Make authenticated API request
+ */
+const apiRequest = async <T>(
+    endpoint: string,
+    options: RequestInit = {}
+): Promise<T> => {
+    const token = await getAuthToken();
+    
+    if (!token) {
+        throw new Error('Not authenticated');
+    }
+
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            ...options.headers,
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(error.detail || `API error: ${response.statusText}`);
+    }
+
+    return response.json();
+};
+
+/**
+ * Portfolio API client
+ */
+export const portfolioApi = {
+    /**
+     * Add a position to the portfolio
+     */
+    addPosition: async (request: PostPositionRequest): Promise<PostPositionResponse> => {
+        return apiRequest<PostPositionResponse>('/api/portfolio/positions', {
+            method: 'POST',
+            body: JSON.stringify(request),
+        });
+    },
+
+    /**
+     * Get portfolio holdings and analytics
+     */
+    getPortfolio: async (): Promise<PortfolioHoldingsResponse> => {
+        return apiRequest<PortfolioHoldingsResponse>('/api/portfolio');
+    },
+
+    /**
+     * Get portfolio valuation snapshots
+     */
+    getSnapshots: async (from?: string, to?: string, granularity?: string): Promise<SnapshotsResponse> => {
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        if (granularity) params.append('granularity', granularity);
+        
+        const query = params.toString();
+        const endpoint = `/api/portfolio/snapshots${query ? `?${query}` : ''}`;
+        
+        return apiRequest<SnapshotsResponse>(endpoint);
+    },
+
+    /**
+     * Generate a new portfolio snapshot or snapshots for a date range
+     */
+    generateSnapshot: async (from?: string, to?: string): Promise<{ status: string; message: string; count: number }> => {
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        
+        const query = params.toString();
+        const endpoint = `/api/portfolio/snapshots/generate${query ? `?${query}` : ''}`;
+        
+        return apiRequest<{ status: string; message: string; count: number }>(endpoint, {
+            method: 'POST',
+        });
+    },
+};
+
