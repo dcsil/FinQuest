@@ -22,7 +22,12 @@ from ..services.portfolio import (
     get_portfolio_view,
     get_or_create_portfolio,
 )
-from ..jobs.snapshots import snapshot_user_portfolio, snapshot_user_portfolio_range, ensure_snapshots_for_range
+from ..jobs.snapshots import (
+    snapshot_user_portfolio,
+    snapshot_user_portfolio_range,
+    ensure_snapshots_for_range,
+    recalculate_snapshots_after_transaction,
+)
 
 router = APIRouter()
 
@@ -61,6 +66,29 @@ async def add_position(
         
         # Get portfolio
         portfolio = get_or_create_portfolio(db, user)
+        
+        # Get the transaction time for recalculation
+        from datetime import timezone
+        transaction_time = request.executedAt
+        if transaction_time is None:
+            transaction_time = datetime.now(timezone.utc)
+        elif transaction_time.tzinfo is None:
+            transaction_time = transaction_time.replace(tzinfo=timezone.utc)
+        else:
+            transaction_time = transaction_time.astimezone(timezone.utc)
+        
+        # Recalculate existing snapshots that occur after this transaction
+        # This ensures snapshots reflect the new holding
+        try:
+            recalculate_snapshots_after_transaction(
+                db=db,
+                portfolio_id=portfolio.id,
+                transaction_time=transaction_time
+            )
+        except Exception:
+            # Don't fail the request if recalculation fails
+            # The snapshots will be recalculated on next access
+            pass
         
         return PostPositionResponse(
             status="ok",

@@ -176,15 +176,22 @@ const PortfolioPage = () => {
         );
     }
 
-    const { totals, positions, allocationByType, allocationBySector, bestMovers, worstMovers, baseCurrency } = portfolio || {
+    const { totals, positions, allocationByType, baseCurrency } = portfolio || {
         totals: { totalValue: 0, totalCostBasis: 0, unrealizedPL: 0, dailyPL: 0 },
         positions: [],
         allocationByType: {},
-        allocationBySector: {},
-        bestMovers: [],
-        worstMovers: [],
         baseCurrency: 'USD',
     };
+
+    // Calculate percentages
+    const unrealizedPLPercent = totals.totalCostBasis !== 0
+        ? (Number(totals.unrealizedPL) / Number(totals.totalCostBasis)) * 100
+        : 0;
+
+    const previousValue = Number(totals.totalValue) - Number(totals.dailyPL);
+    const dailyPLPercent = previousValue !== 0 && totals.dailyPL !== 0
+        ? (Number(totals.dailyPL) / previousValue) * 100
+        : 0;
 
     return (
         <ProtectedRoute>
@@ -197,20 +204,46 @@ const PortfolioPage = () => {
                     <Container size="xl" py="xl">
                         <Stack gap="xl">
                             {/* Header */}
-                            <Group justify="space-between" align="center">
-                                <Title order={1}>Portfolio</Title>
-                                <Button
-                                    leftSection={<IconPlus size={16} />}
-                                    onClick={() => setDialogOpened(true)}
-                                >
-                                    Add Position
-                                </Button>
-                            </Group>
+                            <Title order={1}>Portfolio</Title>
 
-                            {/* Summary Cards */}
+                            {/* First Row: Chart (2/3) + Pie Chart (1/3) */}
                             <Grid>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-                                    <Card shadow="sm" padding="lg" radius="md" withBorder>
+                                <Grid.Col span={{ base: 12, md: 8 }}>
+                                    <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <ValueChart
+                                            data={snapshots}
+                                            baseCurrency={baseCurrency}
+                                            defaultRange={timeRange}
+                                            granularity={getDateRange(timeRange).granularity as 'hourly' | '6hourly' | 'daily' | 'weekly'}
+                                            onRangeChange={(range) => {
+                                                setTimeRange(range);
+                                            }}
+                                            onRefresh={async () => {
+                                                try {
+                                                    // Simply refetch snapshots - missing ones will be auto-generated
+                                                    await loadSnapshots(timeRange);
+                                                } catch (err) {
+                                                    console.error('Failed to refresh snapshots:', err);
+                                                    throw err;
+                                                }
+                                            }}
+                                        />
+                                    </Paper>
+                                </Grid.Col>
+                                <Grid.Col span={{ base: 12, md: 4 }}>
+                                    <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <AllocationChart
+                                            data={allocationByType}
+                                            title="Asset Allocation"
+                                        />
+                                    </Paper>
+                                </Grid.Col>
+                            </Grid>
+
+                            {/* Second Row: Three Widgets */}
+                            <Grid>
+                                <Grid.Col span={{ base: 12, sm: 4 }}>
+                                    <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
                                         <Text size="sm" color="dimmed">
                                             Total Value
                                         </Text>
@@ -219,24 +252,30 @@ const PortfolioPage = () => {
                                         </Text>
                                     </Card>
                                 </Grid.Col>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-                                    <Card shadow="sm" padding="lg" radius="md" withBorder>
+                                <Grid.Col span={{ base: 12, sm: 4 }}>
+                                    <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
                                         <Text size="sm" color="dimmed">
-                                            Unrealized Change
+                                            Total Gain/Loss
                                         </Text>
-                                        <Group gap="xs" mt="xs">
-                                            <Text
-                                                size="xl"
-                                                fw={700}
-                                                c={Number(totals.unrealizedPL) >= 0 ? 'green' : 'red'}
-                                            >
-                                                {formatCurrency(totals.unrealizedPL, baseCurrency)}
-                                            </Text>
-                                        </Group>
+                                        <Text
+                                            size="xl"
+                                            fw={700}
+                                            c={Number(totals.unrealizedPL) >= 0 ? 'green' : 'red'}
+                                            mt="xs"
+                                        >
+                                            {formatCurrency(totals.unrealizedPL, baseCurrency)}
+                                        </Text>
+                                        <Text
+                                            size="sm"
+                                            c={Number(totals.unrealizedPL) >= 0 ? 'green' : 'red'}
+                                            mt={4}
+                                        >
+                                            {formatPercentage(unrealizedPLPercent)}
+                                        </Text>
                                     </Card>
                                 </Grid.Col>
-                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-                                    <Card shadow="sm" padding="lg" radius="md" withBorder>
+                                <Grid.Col span={{ base: 12, sm: 4 }}>
+                                    <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
                                         <Text size="sm" color="dimmed">
                                             Daily Change
                                         </Text>
@@ -254,37 +293,28 @@ const PortfolioPage = () => {
                                                 {formatCurrency(totals.dailyPL, baseCurrency)}
                                             </Text>
                                         </Group>
+                                        <Text
+                                            size="sm"
+                                            c={Number(totals.dailyPL) >= 0 ? 'green' : 'red'}
+                                            mt={4}
+                                        >
+                                            {formatPercentage(dailyPLPercent)}
+                                        </Text>
                                     </Card>
                                 </Grid.Col>
                             </Grid>
 
-                            {/* Value Over Time Chart */}
-                            <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                <ValueChart
-                                    data={snapshots}
-                                    baseCurrency={baseCurrency}
-                                    defaultRange={timeRange}
-                                    granularity={getDateRange(timeRange).granularity as 'hourly' | '6hourly' | 'daily' | 'weekly'}
-                                    onRangeChange={(range) => {
-                                        setTimeRange(range);
-                                    }}
-                                    onRefresh={async () => {
-                                        try {
-                                            // Simply refetch snapshots - missing ones will be auto-generated
-                                            await loadSnapshots(timeRange);
-                                        } catch (err) {
-                                            console.error('Failed to refresh snapshots:', err);
-                                            throw err;
-                                        }
-                                    }}
-                                />
-                            </Paper>
-
                             {/* Holdings Table */}
                             <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                <Title order={2} mb="md">
-                                    Holdings
-                                </Title>
+                                <Group justify="space-between" align="center" mb="md">
+                                    <Title order={2}>Holdings</Title>
+                                    <Button
+                                        leftSection={<IconPlus size={16} />}
+                                        onClick={() => setDialogOpened(true)}
+                                    >
+                                        Add Position
+                                    </Button>
+                                </Group>
                                 {positions.length === 0 ? (
                                     <Text color="dimmed" ta="center" py="xl">
                                         No positions yet. Click &quot;Add Position&quot; to get started.
@@ -399,86 +429,6 @@ const PortfolioPage = () => {
                                     </Table.ScrollContainer>
                                 )}
                             </Paper>
-
-                            {/* Allocations and Movers */}
-                            <Grid>
-                                {/* Allocation by Type */}
-                                <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                        <AllocationChart
-                                            data={allocationByType}
-                                            title="Allocation by Type"
-                                        />
-                                    </Paper>
-                                </Grid.Col>
-
-                                {/* Allocation by Sector */}
-                                <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                        <AllocationChart
-                                            data={allocationBySector}
-                                            title="Allocation by Sector"
-                                        />
-                                    </Paper>
-                                </Grid.Col>
-                            </Grid>
-
-                            {/* Best/Worst Movers */}
-                            <Grid>
-                                <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                        <Title order={3} mb="md">
-                                            Best Movers
-                                        </Title>
-                                        {bestMovers.length === 0 ? (
-                                            <Text color="dimmed">No data available</Text>
-                                        ) : (
-                                            <Stack gap="sm">
-                                                {bestMovers.map((mover) => (
-                                                    <Group key={mover.symbol} justify="space-between">
-                                                        <Text fw={600}>{mover.symbol}</Text>
-                                                        <Group gap="xs">
-                                                            <Text c="green" fw={500}>
-                                                                {formatCurrency(mover.abs, baseCurrency)}
-                                                            </Text>
-                                                            <Badge color="green">
-                                                                {formatPercentage(mover.pct)}
-                                                            </Badge>
-                                                        </Group>
-                                                    </Group>
-                                                ))}
-                                            </Stack>
-                                        )}
-                                    </Paper>
-                                </Grid.Col>
-
-                                <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                        <Title order={3} mb="md">
-                                            Worst Movers
-                                        </Title>
-                                        {worstMovers.length === 0 ? (
-                                            <Text color="dimmed">No data available</Text>
-                                        ) : (
-                                            <Stack gap="sm">
-                                                {worstMovers.map((mover) => (
-                                                    <Group key={mover.symbol} justify="space-between">
-                                                        <Text fw={600}>{mover.symbol}</Text>
-                                                        <Group gap="xs">
-                                                            <Text c="red" fw={500}>
-                                                                {formatCurrency(mover.abs, baseCurrency)}
-                                                            </Text>
-                                                            <Badge color="red">
-                                                                {formatPercentage(mover.pct)}
-                                                            </Badge>
-                                                        </Group>
-                                                    </Group>
-                                                ))}
-                                            </Stack>
-                                        )}
-                                    </Paper>
-                                </Grid.Col>
-                            </Grid>
                         </Stack>
 
                         {/* Add Position Dialog */}

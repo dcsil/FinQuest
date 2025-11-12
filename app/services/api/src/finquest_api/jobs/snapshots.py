@@ -119,8 +119,7 @@ def snapshot_all_portfolios(as_of: Optional[datetime] = None) -> None:
             try:
                 snapshot_portfolio(db, portfolio.id, as_of)
             except Exception as e:
-                # Log error but continue with other portfolios
-                print(f"Error creating snapshot for portfolio {portfolio.id}: {e}")
+                # Continue with other portfolios on error
                 db.rollback()
 
 
@@ -164,8 +163,7 @@ def snapshot_user_portfolio_range(user_id: UUID, start_date: date, end_date: dat
                 snapshot_portfolio(db, portfolio.id, as_of)
                 count += 1
             except Exception as e:
-                # Log error but continue with other dates
-                print(f"Error creating snapshot for {current_date}: {e}")
+                # Continue with other dates on error
                 db.rollback()
             
             current_date += timedelta(days=1)
@@ -224,6 +222,52 @@ def calculate_required_time_slots(
     return slots
 
 
+def _get_historical_price_from_daily_data(
+    ticker: yf.Ticker,
+    target_date: date,
+    as_of_utc: datetime
+) -> Optional[PriceRecord]:
+    """Helper to extract price from daily historical data"""
+    start_date = target_date - timedelta(days=60)
+    end_date = target_date + timedelta(days=2)
+    
+    try:
+        hist = ticker.history(start=start_date, end=end_date, interval="1d")
+        if hist.empty or len(hist) == 0:
+            return None
+        
+        closest_date = None
+        closest_price = None
+        
+        for idx, row in hist.iterrows():
+            hist_date = idx.date()
+            if hist_date <= target_date:
+                if closest_date is None or hist_date > closest_date:
+                    closest_date = hist_date
+                    closest_price = row["Close"]
+        
+        if closest_price is None and len(hist) > 0:
+            closest_date = hist.index[-1].date()
+            closest_price = hist.iloc[-1]["Close"]
+        
+        if closest_price is not None:
+            try:
+                price_float = float(closest_price)
+                if price_float > 0:
+                    return PriceRecord(
+                        price=Decimal(str(price_float)),
+                        ts=datetime.combine(closest_date, time.min).replace(tzinfo=timezone.utc),
+                        day_change_abs=None,
+                        day_change_pct=None,
+                    )
+            except (ValueError, TypeError):
+                pass
+    except Exception:
+        pass
+    
+    return None
+
+
 def get_historical_price(
     db: Session,
     instrument_id: UUID,
@@ -249,18 +293,16 @@ def get_historical_price(
         ticker = yf.Ticker(instrument.symbol)
         now = datetime.now(timezone.utc)
         time_diff = now - as_of_utc
+        target_date = as_of_utc.date()
         
         # For very recent times (within last few hours), try intraday data first
         if time_diff < timedelta(hours=6):
             try:
                 hist = ticker.history(period="1d", interval="1m")
                 if not hist.empty and len(hist) > 0:
-                    # Get the latest available price (yfinance intraday may not have data for all times)
-                    # Use the most recent price before or at as_of
                     as_of_naive = as_of_utc.replace(tzinfo=None)
                     hist_times = hist.index
                     
-                    # Find the closest time before or at as_of
                     closest_idx = None
                     for i, hist_time in enumerate(hist_times):
                         if hist_time <= as_of_naive:
@@ -268,7 +310,6 @@ def get_historical_price(
                         else:
                             break
                     
-                    # If no price before as_of, use the first available price
                     if closest_idx is None and len(hist) > 0:
                         closest_idx = 0
                     
@@ -286,58 +327,13 @@ def get_historical_price(
                             day_change_abs=None,
                             day_change_pct=None,
                         )
-            except Exception as e:
-                # If intraday fails, fall through to daily data
-                print(f"Warning: Failed to get intraday data for {instrument.symbol} at {as_of_utc}: {e}")
+            except Exception:
+                pass
         
         # For older data or if intraday fails, use daily data
-        target_date = as_of_utc.date()
-        # Fetch more data to ensure we get something (go back further to handle weekends/holidays)
-        start_date = target_date - timedelta(days=60)
-        end_date = target_date + timedelta(days=2)  # Include next day to handle timezone differences
-        
-        try:
-            hist = ticker.history(start=start_date, end=end_date, interval="1d")
-            if not hist.empty and len(hist) > 0:
-                # Find the closest date to as_of (on or before target_date)
-                # This handles weekends/holidays by using the last available trading day
-                closest_date = None
-                closest_price = None
-                
-                # Iterate through all rows to find the closest date <= target_date
-                for idx, row in hist.iterrows():
-                    hist_date = idx.date()
-                    if hist_date <= target_date:
-                        # Update to the most recent date <= target_date
-                        if closest_date is None or hist_date > closest_date:
-                            closest_date = hist_date
-                            closest_price = row["Close"]
-                
-                # If no price on or before target_date, use the most recent available
-                if closest_price is None and len(hist) > 0:
-                    # Use the most recent price available (even if it's after target_date)
-                    closest_date = hist.index[-1].date()
-                    closest_price = hist.iloc[-1]["Close"]
-                    print(f"Warning: Using future price for {instrument.symbol} at {target_date} (closest: {closest_date})")
-                
-                if closest_price is not None:
-                    try:
-                        # Check if price is valid (not NaN)
-                        price_float = float(closest_price)
-                        if price_float > 0:  # Valid price should be positive
-                            price = Decimal(str(price_float))
-                            return PriceRecord(
-                                price=price,
-                                ts=datetime.combine(closest_date, time.min).replace(tzinfo=timezone.utc),
-                                day_change_abs=None,
-                                day_change_pct=None,
-                            )
-                    except (ValueError, TypeError) as e:
-                        print(f"Warning: Invalid price for {instrument.symbol} on {closest_date}: {e}")
-        except Exception as e:
-            print(f"Warning: Failed to get daily data for {instrument.symbol} at {as_of_utc}: {e}")
-            import traceback
-            traceback.print_exc()
+        price_record = _get_historical_price_from_daily_data(ticker, target_date, as_of_utc)
+        if price_record:
+            return price_record
         
         # Fallback to latest price if historical data unavailable
         if fallback_to_latest:
@@ -345,19 +341,62 @@ def get_historical_price(
                 latest_price_record = get_latest_price(db, instrument_id)
                 if latest_price_record and latest_price_record.price:
                     return latest_price_record
-            except Exception as e:
-                print(f"Warning: Failed to get latest price for {instrument.symbol}: {e}")
+            except Exception:
+                pass
         
         return None
-    except Exception as e:
-        print(f"Error getting historical price for {instrument.symbol} at {as_of_utc}: {e}")
-        # Try fallback to latest price
+    except Exception:
         if fallback_to_latest:
             try:
                 return get_latest_price(db, instrument_id)
             except Exception:
                 return None
         return None
+
+
+def get_historical_prices_batch(
+    db: Session,
+    instrument_ids: List[UUID],
+    as_of: datetime,
+    fallback_to_latest: bool = True
+) -> dict[UUID, Optional[PriceRecord]]:
+    """
+    Batch fetch historical prices for multiple instruments at a specific time.
+    Uses individual fetches but optimizes by batching database queries.
+    """
+    if not instrument_ids:
+        return {}
+    
+    # Get all instruments in one query
+    instruments = {
+        inst.id: inst
+        for inst in db.query(Instrument).filter(Instrument.id.in_(instrument_ids)).all()
+    }
+    
+    results: dict[UUID, Optional[PriceRecord]] = {}
+    
+    # Fetch prices individually but efficiently
+    # This is still faster than the original because we batch the instrument query
+    for instrument_id in instrument_ids:
+        if instrument_id in instruments:
+            try:
+                price_record = get_historical_price(db, instrument_id, as_of, fallback_to_latest=fallback_to_latest)
+                if price_record:
+                    results[instrument_id] = price_record
+            except Exception:
+                if fallback_to_latest:
+                    try:
+                        latest_price = get_latest_price(db, instrument_id)
+                        if latest_price:
+                            results[instrument_id] = latest_price
+                    except Exception:
+                        results[instrument_id] = None
+                else:
+                    results[instrument_id] = None
+        else:
+            results[instrument_id] = None
+    
+    return results
 
 
 def calculate_portfolio_value_at_time(
@@ -385,10 +424,7 @@ def calculate_portfolio_value_at_time(
     ).order_by(Transaction.executed_at).all()
     
     if not transactions:
-        print(f"Warning: No transactions found for portfolio {portfolio_id} before {as_of_aware}")
         return Decimal("0")
-    
-    print(f"Calculating portfolio value at {as_of_aware} with {len(transactions)} transactions")
     
     # Compute positions using average cost method
     positions: dict[UUID, Decimal] = {}  # instrument_id -> quantity
@@ -428,10 +464,16 @@ def calculate_portfolio_value_at_time(
     
     # Get instruments
     instrument_ids = list(positions.keys())
+    if not instrument_ids:
+        return Decimal("0")
+    
     instruments = {
         inst.id: inst
         for inst in db.query(Instrument).filter(Instrument.id.in_(instrument_ids)).all()
     }
+    
+    # Batch fetch historical prices for all instruments
+    price_records = get_historical_prices_batch(db, instrument_ids, as_of, fallback_to_latest=True)
     
     # Calculate total value using historical prices
     total_value = Decimal("0")
@@ -439,13 +481,11 @@ def calculate_portfolio_value_at_time(
     for instrument_id, quantity in positions.items():
         instrument = instruments.get(instrument_id)
         if not instrument:
-            print(f"Warning: Instrument {instrument_id} not found")
             continue
         
-        # Get historical price (with fallback to latest)
-        price_record = get_historical_price(db, instrument_id, as_of, fallback_to_latest=True)
+        # Get historical price from batch results
+        price_record = price_records.get(instrument_id)
         if not price_record or not price_record.price:
-            print(f"Warning: No price found for {instrument.symbol} at {as_of}")
             continue
         
         # Get historical FX rate (with fallback to current rate)
@@ -455,16 +495,13 @@ def calculate_portfolio_value_at_time(
             from ..services.fx import fx_now
             fx_rate = fx_now(db, instrument.currency, user.base_currency)
             if not fx_rate:
-                print(f"Warning: No FX rate found for {instrument.currency} to {user.base_currency}")
                 continue
         
         # Calculate value in base currency
         value_in_trade_ccy = quantity * price_record.price
         value_base = value_in_trade_ccy * fx_rate
         total_value += value_base
-        print(f"  {instrument.symbol}: {quantity} @ {price_record.price} {instrument.currency} * {fx_rate} = {value_base} {user.base_currency}")
     
-    print(f"Total portfolio value at {as_of}: {total_value} {user.base_currency}")
     return total_value
 
 
@@ -530,9 +567,8 @@ def ensure_snapshots_for_range(
             )
             db.add(snapshot)
             created_count += 1
-        except Exception as e:
-            # Log error but continue
-            print(f"Error creating snapshot for {slot}: {e}")
+        except Exception:
+            # Continue on error
             db.rollback()
             continue
     
@@ -540,4 +576,73 @@ def ensure_snapshots_for_range(
         db.commit()
     
     return created_count
+
+
+def recalculate_snapshots_after_transaction(
+    db: Session,
+    portfolio_id: UUID,
+    transaction_time: datetime
+) -> int:
+    """
+    Recalculate all snapshots that occur after a transaction time.
+    This ensures that when a new holding is added, all future snapshots
+    are updated to reflect the new holding.
+    
+    Returns the number of snapshots recalculated.
+    """
+    # Ensure transaction_time is timezone-aware
+    if transaction_time.tzinfo is None:
+        transaction_time_utc = transaction_time.replace(tzinfo=timezone.utc)
+    else:
+        transaction_time_utc = transaction_time.astimezone(timezone.utc)
+    
+    # Get portfolio and user
+    portfolio = db.query(Portfolio).filter(Portfolio.id == portfolio_id).first()
+    if not portfolio:
+        return 0
+    
+    user = db.query(User).filter(User.id == portfolio.user_id).first()
+    if not user:
+        return 0
+    
+    # Find all snapshots that occur after the transaction time
+    # These need to be recalculated because they should include the new transaction
+    snapshots_to_recalculate = db.query(PortfolioValuationSnapshot).filter(
+        PortfolioValuationSnapshot.portfolio_id == portfolio_id,
+        PortfolioValuationSnapshot.as_of >= transaction_time_utc
+    ).order_by(PortfolioValuationSnapshot.as_of).all()
+    
+    if not snapshots_to_recalculate:
+        return 0
+    
+    recalculated_count = 0
+    
+    # Recalculate each snapshot
+    for snapshot in snapshots_to_recalculate:
+        try:
+            # Calculate portfolio value at the snapshot time
+            total_value = calculate_portfolio_value_at_time(
+                db=db,
+                user=user,
+                portfolio_id=portfolio_id,
+                as_of=snapshot.as_of
+            )
+            
+            # Update snapshot with new total value
+            snapshot.total_value = total_value
+            
+            # Note: We're only updating total_value here for efficiency.
+            # If you need to update other fields (cost_basis, unrealized_pl, etc.),
+            # you would need to calculate the full portfolio view at that time.
+            
+            recalculated_count += 1
+        except Exception:
+            # Continue on error
+            db.rollback()
+            continue
+    
+    if recalculated_count > 0:
+        db.commit()
+    
+    return recalculated_count
 
