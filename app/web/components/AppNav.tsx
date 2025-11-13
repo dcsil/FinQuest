@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
-import { IconLogout, IconUser, IconWallet, IconSun, IconMoon } from '@tabler/icons-react';
+import { IconLogout, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import FinQuestLogo from '../assets/FinQuestLogo.png';

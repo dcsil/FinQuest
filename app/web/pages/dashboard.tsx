@@ -8,7 +8,6 @@ import {
     Title,
     Stack,
     Paper,
-    Grid,
     AppShell,
 } from '@mantine/core';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -21,7 +20,7 @@ import { format, subDays, startOfYear } from 'date-fns';
 const DashboardPage = () => {
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState<boolean>(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
 

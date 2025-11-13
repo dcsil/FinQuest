@@ -8,7 +8,6 @@ import {
     TextInput,
     NumberInput,
     Stack,
-    Text,
     Group,
     Alert,
 } from '@mantine/core';
@@ -57,14 +56,14 @@ export const AddPositionDialog = ({ opened, onClose, onSuccess }: AddPositionDia
             };
 
             await portfolioApi.addPosition(request);
-            
+
             // Reset form
             setSymbol('');
             setQuantity(0);
             setAvgCost(0);
             setExecutedAt('');
             setError(null);
-            
+
             // Close dialog and refresh portfolio
             onClose();
             onSuccess();
@@ -113,10 +112,10 @@ export const AddPositionDialog = ({ opened, onClose, onSuccess }: AddPositionDia
                     label="Quantity"
                     placeholder="10"
                     value={quantity}
-                    onChange={setQuantity}
+                    onChange={(value) => setQuantity(value === '' ? '' : Number(value))}
                     min={0}
                     step={0.01}
-                    precision={2}
+                    decimalScale={2}
                     required
                     disabled={loading}
                 />
@@ -125,10 +124,10 @@ export const AddPositionDialog = ({ opened, onClose, onSuccess }: AddPositionDia
                     label="Average Cost"
                     placeholder="180.00"
                     value={avgCost}
-                    onChange={setAvgCost}
+                    onChange={(value) => setAvgCost(value === '' ? '' : Number(value))}
                     min={0}
                     step={0.01}
-                    precision={2}
+                    decimalScale={2}
                     required
                     disabled={loading}
                 />

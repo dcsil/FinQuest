@@ -4,23 +4,22 @@ Portfolio service for position management and analytics
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
 
 from ..db.models import (
-    User, Portfolio, Instrument, Transaction, InstrumentPriceLatest, InstrumentPriceEOD
+    User, Portfolio, Instrument, Transaction
 )
 from ..schemas import (
     PortfolioHoldingsResponse, PositionInfo, PortfolioTotals, MoverInfo
 )
 from .instruments import ensure_instrument
-from .pricing import get_latest_price, get_prev_close, get_latest_prices
-from .fx import fx_now, fx_at, convert_to_base
+from .pricing import get_prev_close, get_latest_prices
+from .fx import fx_now, fx_at
 
 
 @dataclass

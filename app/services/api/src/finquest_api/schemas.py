@@ -1,10 +1,9 @@
 """
 Pydantic schemas for request/response validation
 """
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from uuid import UUID
 from pydantic import BaseModel, Field
 
 

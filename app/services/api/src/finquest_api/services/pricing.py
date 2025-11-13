@@ -11,7 +11,6 @@ from uuid import UUID
 
 import yfinance as yf
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 
 from ..db.models import Instrument, InstrumentPriceLatest, InstrumentPriceEOD
 

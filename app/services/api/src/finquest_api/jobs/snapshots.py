@@ -14,8 +14,8 @@ from sqlalchemy.orm import Session
 
 from ..db.models import User, Portfolio, PortfolioValuationSnapshot, Instrument, Transaction
 from ..db.session import session_scope
-from ..services.portfolio import get_portfolio_view, get_or_create_portfolio, _compute_positions
-from ..services.pricing import get_latest_price, get_prev_close, backfill_eod, PriceRecord
+from ..services.portfolio import get_portfolio_view, get_or_create_portfolio
+from ..services.pricing import get_latest_price, PriceRecord
 from ..services.fx import fx_at
 
 
@@ -118,7 +118,7 @@ def snapshot_all_portfolios(as_of: Optional[datetime] = None) -> None:
         for portfolio in portfolios:
             try:
                 snapshot_portfolio(db, portfolio.id, as_of)
-            except Exception as e:
+            except Exception:
                 # Continue with other portfolios on error
                 db.rollback()
 
@@ -162,7 +162,7 @@ def snapshot_user_portfolio_range(user_id: UUID, start_date: date, end_date: dat
             try:
                 snapshot_portfolio(db, portfolio.id, as_of)
                 count += 1
-            except Exception as e:
+            except Exception:
                 # Continue with other dates on error
                 db.rollback()
             
@@ -587,7 +587,7 @@ def ensure_snapshots_for_range(
             )
             db.add(snapshot)
             created_count += 1
-        except Exception as e:
+        except Exception:
             # Continue on error (including unique constraint violations)
             db.rollback()
             continue
