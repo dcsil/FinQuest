@@ -1,10 +1,14 @@
 """
 Authentication utilities for JWT token validation
 """
+from uuid import UUID
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 from .config import settings
+from .db.models import User
+from .db.session import get_session
 
 security = HTTPBearer()
 
@@ -32,20 +36,47 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         )
 
 
-async def get_current_user(token_payload: dict = Depends(verify_token)) -> dict:
+async def get_current_user(
+    token_payload: dict = Depends(verify_token),
+    db: Session = Depends(get_session)
+) -> User:
     """
-    Get current user from token payload
+    Get current user from database using auth_user_id from token payload.
+    Creates user if doesn't exist (for first-time login).
     """
-    user_id = token_payload.get("sub")
-    if not user_id:
+    auth_user_id_str = token_payload.get("sub")
+    if not auth_user_id_str:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload"
         )
     
-    return {
-        "id": user_id,
-        "email": token_payload.get("email"),
-        "role": token_payload.get("role")
-    }
+    try:
+        auth_user_id = UUID(auth_user_id_str)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user ID format"
+        )
+    
+    # Look up user by auth_user_id
+    user = db.query(User).filter(
+        User.auth_user_id == auth_user_id,
+        User.deleted_at.is_(None)
+    ).first()
+    
+    if not user:
+        # User doesn't exist in our DB yet - create it
+        email = token_payload.get("email", "")
+        user = User(
+            auth_user_id=auth_user_id,
+            email=email,
+            base_currency="USD",  # Default, can be updated later
+            timezone="America/Toronto"  # Default
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    
+    return user
 

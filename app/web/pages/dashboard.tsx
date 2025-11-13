@@ -1,0 +1,211 @@
+/**
+ * Dashboard Page
+ */
+import { useState, useEffect, useCallback } from 'react';
+import Head from 'next/head';
+import {
+    Container,
+    Title,
+    Stack,
+    Paper,
+    AppShell,
+} from '@mantine/core';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { AppNav } from '@/components/AppNav';
+import { ValueChart, type TimeRange } from '@/components/ValueChart';
+import { portfolioApi } from '@/lib/api';
+import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
+import { format, subDays, startOfYear } from 'date-fns';
+
+const DashboardPage = () => {
+    const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
+    const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
+    const [, setLoading] = useState<boolean>(true);
+    const [timeRange, setTimeRange] = useState<TimeRange>('1m');
+    const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
+
+    const loadPortfolio = async () => {
+        try {
+            setLoading(true);
+            const data = await portfolioApi.getPortfolio();
+            setPortfolio(data);
+        } catch (err) {
+            console.error('Failed to load portfolio:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getDateRange = useCallback((range: TimeRange): { from: string; to: string; granularity: string } => {
+        const to = new Date();
+        let from: Date;
+        let granularity: string;
+
+        switch (range) {
+            case '1d':
+                from = subDays(to, 1);
+                granularity = 'hourly';
+                break;
+            case '1w':
+                from = subDays(to, 7);
+                granularity = '6hourly';
+                break;
+            case '1m':
+                from = subDays(to, 30);
+                granularity = 'daily';
+                break;
+            case 'ytd':
+                from = startOfYear(to);
+                granularity = 'daily';
+                break;
+            case '1y':
+                from = subDays(to, 365);
+                granularity = 'weekly';
+                break;
+            default:
+                from = subDays(to, 30);
+                granularity = 'daily';
+        }
+
+        return {
+            from: format(from, 'yyyy-MM-dd'),
+            to: format(to, 'yyyy-MM-dd'),
+            granularity,
+        };
+    }, []);
+
+    const loadSnapshots = useCallback(async (range?: TimeRange) => {
+        try {
+            const rangeToUse = range || timeRange;
+            const { from, to, granularity } = getDateRange(rangeToUse);
+
+            setShowSnapshotsSkeleton(false);
+
+            // Set a timeout to show skeleton after 1 second
+            const skeletonTimeout = setTimeout(() => {
+                setShowSnapshotsSkeleton(true);
+            }, 1000);
+
+            try {
+                const data = await portfolioApi.getSnapshots(from, to, granularity);
+                setSnapshots(data.series);
+            } finally {
+                clearTimeout(skeletonTimeout);
+                setShowSnapshotsSkeleton(false);
+            }
+        } catch (err) {
+            console.error('Failed to load snapshots:', err);
+            setShowSnapshotsSkeleton(false);
+        }
+    }, [timeRange, getDateRange]);
+
+    // Load portfolio and initial snapshots on mount
+    useEffect(() => {
+        loadPortfolio();
+        loadSnapshots(timeRange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount
+
+    // Reload snapshots when time range changes
+    useEffect(() => {
+        loadSnapshots(timeRange);
+    }, [timeRange, loadSnapshots]);
+
+    const { totals, baseCurrency } = portfolio || {
+        totals: { totalValue: 0, totalCostBasis: 0, unrealizedPL: 0, dailyPL: 0 },
+        baseCurrency: 'USD',
+    };
+
+    // Calculate daily percentage change
+    const previousValue = Number(totals.totalValue) - Number(totals.dailyPL);
+    const dailyPLPercent = previousValue !== 0 && totals.dailyPL !== 0
+        ? (Number(totals.dailyPL) / previousValue) * 100
+        : 0;
+
+    const formatCurrency = (value: number | string | null | undefined, currency: string) => {
+        if (value === null || value === undefined) return '~';
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numValue)) return '~';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency || 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(numValue);
+    };
+
+    const formatPercentage = (value: number | string | null | undefined) => {
+        if (value === null || value === undefined) return '~';
+        const numValue = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numValue)) return '~';
+        const sign = numValue >= 0 ? '+' : '';
+        return `${sign}${numValue.toFixed(2)}%`;
+    };
+
+    return (
+        <ProtectedRoute>
+            <Head>
+                <title>Dashboard - FinQuest</title>
+            </Head>
+            <AppShell header={{ height: 70 }}>
+                <AppNav />
+                <AppShell.Main>
+                    <Container size="xl" py="xl">
+                        <Stack gap="xl">
+                            {/* Header */}
+                            <Title order={1}>Dashboard</Title>
+
+                            {/* My Investments Section */}
+                            <div>
+                                <Title order={2} mb="md">My investments</Title>
+                                <Paper shadow="sm" p="lg" radius="md" withBorder>
+                                    {showSnapshotsSkeleton ? (
+                                        <div style={{ position: 'relative', height: 400 }}>
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 20,
+                                                left: 20,
+                                                zIndex: 10,
+                                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                                padding: '12px 16px',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                                            }}>
+                                                <div style={{ fontSize: '24px', fontWeight: 700 }}>
+                                                    {formatCurrency(totals.totalValue, baseCurrency)}
+                                                </div>
+                                                <div style={{
+                                                    fontSize: '14px',
+                                                    color: dailyPLPercent >= 0 ? '#16a34a' : '#dc2626',
+                                                    fontWeight: 500
+                                                }}>
+                                                    {formatPercentage(dailyPLPercent)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <ValueChart
+                                            data={snapshots}
+                                            baseCurrency={baseCurrency}
+                                            defaultRange={timeRange}
+                                            granularity={getDateRange(timeRange).granularity as 'hourly' | '6hourly' | 'daily' | 'weekly'}
+                                            onRangeChange={(range) => {
+                                                setTimeRange(range);
+                                            }}
+                                            overlayValue={totals.totalValue}
+                                            overlayPercentage={dailyPLPercent}
+                                            overlayCurrency={baseCurrency}
+                                        />
+                                    )}
+                                </Paper>
+                            </div>
+                        </Stack>
+                    </Container>
+                </AppShell.Main>
+            </AppShell>
+        </ProtectedRoute>
+    );
+};
+
+export default DashboardPage;
+

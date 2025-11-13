@@ -1,7 +1,7 @@
 """
 Configuration settings for FinQuest API
 """
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
         env_file=".env",
         case_sensitive=True
     )
-    
+
     # API Configuration
     API_NAME: str = "FinQuest API"
     API_VERSION: str = "0.1.0"
@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
     SUPABASE_JWT_SECRET: str = ""
+
+    # Supabase Postgres / SQLAlchemy
+    SUPABASE_DB_URL: Optional[str] = None
+    SQLALCHEMY_ECHO: bool = False
+    SQLALCHEMY_POOL_SIZE: int = 5
+    SQLALCHEMY_MAX_OVERFLOW: int = 10
+    SQLALCHEMY_POOL_TIMEOUT: int = 30
 
 
 settings = Settings()
