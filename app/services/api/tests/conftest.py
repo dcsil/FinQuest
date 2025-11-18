@@ -1,28 +1,37 @@
 """
-Pytest configuration and fixtures
+Pytest fixtures shared across FinQuest API tests.
 """
+from typing import Generator
+from unittest.mock import MagicMock
+
 import os
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
-
-# Set test environment variables before importing app
-os.environ['SUPABASE_URL'] = 'http://test.supabase.co'
-os.environ['SUPABASE_KEY'] = 'test-key'
-os.environ['SUPABASE_JWT_SECRET'] = 'test-secret'
 
 
 @pytest.fixture
-def client():
-    """FastAPI test client"""
-    # Mock supabase client before importing to avoid initialization errors
-    with patch('finquest_api.supabase_client.create_client'):
-        from finquest_api.main import app
-        return TestClient(app)
+def anyio_backend():
+    """Force anyio-based tests to run with asyncio only."""
+    return "asyncio"
 
 
 @pytest.fixture
-def mock_supabase():
-    """Mock Supabase client for testing"""
-    with patch('finquest_api.routers.auth.supabase') as mock:
-        yield mock
+def client(monkeypatch) -> Generator[TestClient, None, None]:
+    """Provide a FastAPI test client for API tests."""
+    # Ensure the DB URL is set for tests that require app startup.
+    monkeypatch.setenv("SUPABASE_DB_URL", os.getenv("SUPABASE_DB_URL", "sqlite://"))
+
+    from finquest_api.main import app  # imported lazily to avoid DB initialization for other tests
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def mock_supabase(monkeypatch) -> MagicMock:
+    """Replace Supabase client with a MagicMock for API endpoint tests."""
+    mock_client = MagicMock()
+    monkeypatch.setattr("finquest_api.supabase_client.supabase", mock_client)
+    monkeypatch.setattr("finquest_api.routers.auth.supabase", mock_client)
+    return mock_client
