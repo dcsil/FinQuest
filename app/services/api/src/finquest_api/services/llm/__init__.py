@@ -8,6 +8,7 @@ from .models import (
     LLMError,
     LLMMessage,
     LLMUsage,
+    StructuredOutputConfig,
 )
 from .service import LLMService
 
@@ -18,4 +19,5 @@ __all__ = [
     "LLMMessage",
     "LLMService",
     "LLMUsage",
+    "StructuredOutputConfig",
 ]

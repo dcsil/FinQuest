@@ -6,7 +6,11 @@ from pydantic import SecretStr
 
 from finquest_api.config import LLMSettings
 from finquest_api.services.llm.client_base import ProviderNotConfiguredError
-from finquest_api.services.llm.models import LLMCompletionRequest, LLMMessage
+from finquest_api.services.llm.models import (
+    LLMCompletionRequest,
+    LLMMessage,
+    StructuredOutputConfig,
+)
 from finquest_api.services.llm.providers.gemini import GeminiChatClient
 
 
@@ -118,3 +122,53 @@ async def test_gemini_client_requires_api_key():
 
     with pytest.raises(ProviderNotConfiguredError):
         await client.acomplete(request)
+
+
+@pytest.mark.anyio("asyncio")
+async def test_gemini_client_handles_structured_output(monkeypatch):
+    """Ensure structured response configuration flows through and response is parsed."""
+
+    response_body = {
+        "candidates": [
+            {
+                "content": {
+                    "role": "model",
+                    "parts": [{"text": '{"answer": "Yes"}'}],
+                },
+                "finishReason": "STOP",
+            }
+        ],
+        "usageMetadata": {
+            "promptTokenCount": 1,
+            "candidatesTokenCount": 1,
+            "totalTokenCount": 2,
+        },
+        "responseId": "resp-structured",
+    }
+    DummyAsyncClient.response = DummyResponse(json_data=response_body)
+    monkeypatch.setattr(
+        "finquest_api.services.llm.providers.gemini.httpx.AsyncClient",
+        DummyAsyncClient,
+    )
+
+    settings = LLMSettings(
+        provider="gemini",
+        model="gemini-2.0-flash",
+        api_key=SecretStr("test-key"),
+    )
+    client = GeminiChatClient(settings)
+    structured = StructuredOutputConfig(
+        type="json_schema",
+        json_schema={"type": "object", "properties": {"answer": {"type": "string"}}},
+    )
+    request = LLMCompletionRequest(
+        messages=[LLMMessage(role="user", content="Answer with yes/no")],
+        structured_output=structured,
+    )
+
+    result = await client.acomplete(request)
+
+    sent = DummyAsyncClient.last_request
+    assert sent["json"]["generationConfig"]["responseMimeType"] == "application/json"
+    assert sent["json"]["generationConfig"]["responseSchema"] == structured.json_schema
+    assert result.structured_output == {"answer": "Yes"}

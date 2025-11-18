@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+import json
+
 import httpx
 
 from ..client_base import LLMClient, ProviderNotConfiguredError, ProviderRequestError
@@ -42,7 +44,7 @@ class OpenAIChatClient(LLMClient):
             )
 
         data = response.json()
-        return self._parse_completion(data)
+        return self._parse_completion(data, request)
 
     def _build_headers(self) -> Dict[str, str]:
         """Prepare headers expected by OpenAI."""
@@ -65,9 +67,20 @@ class OpenAIChatClient(LLMClient):
             payload["max_tokens"] = request.max_output_tokens
         if request.user_identifier:
             payload["user"] = request.user_identifier
+        if request.structured_output:
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "schema": request.structured_output.json_schema,
+                },
+            }
         return payload
 
-    def _parse_completion(self, response: Dict[str, Any]) -> LLMCompletion:
+    def _parse_completion(
+        self,
+        response: Dict[str, Any],
+        request: LLMCompletionRequest,
+    ) -> LLMCompletion:
         """Create a normalized LLMCompletion object from OpenAI's response."""
         choices: List[Dict[str, Any]] = response.get("choices") or []
         if not choices:
@@ -87,10 +100,18 @@ class OpenAIChatClient(LLMClient):
             total_tokens=usage_payload.get("total_tokens", 0),
         )
 
+        structured_data = None
+        if message_payload.get("content") and request.structured_output:
+            try:
+                structured_data = json.loads(message_payload["content"])
+            except (json.JSONDecodeError, TypeError):
+                structured_data = None
+
         return LLMCompletion(
             message=message,
             usage=usage,
             finish_reason=first_choice.get("finish_reason"),
             provider_response_id=response.get("id"),
             raw_response=response,
+            structured_output=structured_data,
         )

@@ -7,7 +7,11 @@ Run with:
 import asyncio
 
 from finquest_api.config import settings
-from finquest_api.services.llm import LLMMessage, LLMService
+from finquest_api.services.llm import (
+    LLMMessage,
+    LLMService,
+    StructuredOutputConfig,
+)
 
 
 async def main() -> None:
@@ -21,9 +25,20 @@ async def main() -> None:
         temperature=0.4,
         max_output_tokens=128,
         user_identifier="demo-user",
+        structured_output=StructuredOutputConfig(
+            type="json_schema",
+            json_schema={
+                "type": "object",
+                "properties": {
+                    "explanation": {"type": "string"},
+                },
+                "required": ["explanation"],
+            },
+        ),
     )
 
-    print("AI response:\n", completion.message.content)
+    print("Raw text response:\n", completion.message.content)
+    print("Structured output:\n", completion.structured_output)
     print("Token usage:", completion.usage.model_dump())
 
 

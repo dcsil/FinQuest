@@ -3,6 +3,7 @@ Google Gemini chat completion provider implementation.
 """
 from __future__ import annotations
 
+import json
 from typing import Any, Dict, List, Sequence
 
 import httpx
@@ -47,7 +48,7 @@ class GeminiChatClient(LLMClient):
             )
 
         data = response.json()
-        return self._parse_completion(data)
+        return self._parse_completion(data, request)
 
     def _build_payload(
         self,
@@ -78,7 +79,7 @@ class GeminiChatClient(LLMClient):
                 "parts": [{"text": "\n".join(system_instruction_parts)}]
             }
 
-        payload["generationConfig"] = {
+        generation_config: Dict[str, Any] = {
             "temperature": request.temperature,
             **(
                 {"maxOutputTokens": request.max_output_tokens}
@@ -86,10 +87,19 @@ class GeminiChatClient(LLMClient):
                 else {}
             ),
         }
+        if request.structured_output:
+            generation_config["responseMimeType"] = "application/json"
+            generation_config["responseSchema"] = request.structured_output.json_schema
+
+        payload["generationConfig"] = generation_config
 
         return payload
 
-    def _parse_completion(self, response: Dict[str, Any]) -> LLMCompletion:
+    def _parse_completion(
+        self,
+        response: Dict[str, Any],
+        request: LLMCompletionRequest,
+    ) -> LLMCompletion:
         """Normalize Gemini responses to the shared schema."""
         candidates: List[Dict[str, Any]] = response.get("candidates") or []
         if not candidates:
@@ -105,6 +115,12 @@ class GeminiChatClient(LLMClient):
         normalized_role = "assistant" if role == "model" else role
 
         message = LLMMessage(role=normalized_role, content=text)
+        structured_data = None
+        if request.structured_output and text:
+            try:
+                structured_data = json.loads(text)
+            except json.JSONDecodeError:
+                structured_data = None
 
         usage_payload = response.get("usageMetadata") or {}
         usage = LLMUsage(
@@ -119,4 +135,5 @@ class GeminiChatClient(LLMClient):
             finish_reason=first_candidate.get("finishReason"),
             provider_response_id=response.get("responseId"),
             raw_response=response,
+            structured_output=structured_data,
         )

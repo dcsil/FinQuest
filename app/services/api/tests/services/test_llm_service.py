@@ -11,6 +11,7 @@ from finquest_api.services.llm.models import (
     LLMCompletion,
     LLMMessage,
     LLMUsage,
+    StructuredOutputConfig,
 )
 
 
@@ -50,11 +51,17 @@ async def test_llm_service_forwards_parameters(monkeypatch):
     service = service_module.LLMService(settings)
 
     messages = [LLMMessage(role="user", content="Hello")]
+    structured = StructuredOutputConfig(
+        type="json_schema",
+        json_schema={"type": "object", "properties": {"answer": {"type": "string"}}},
+    )
+
     result = await service.acomplete(
         messages,
         temperature=0.5,
         max_output_tokens=256,
         user_identifier="user-123",
+        structured_output=structured,
     )
 
     assert result.message.content == "ok"
@@ -63,3 +70,4 @@ async def test_llm_service_forwards_parameters(monkeypatch):
     assert sent_request.max_output_tokens == 256
     assert sent_request.user_identifier == "user-123"
     assert sent_request.model == "gemini-2.0-flash"
+    assert sent_request.structured_output == structured

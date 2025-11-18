@@ -30,6 +30,14 @@ class LLMUsage(BaseModel):
     )
 
 
+class StructuredOutputConfig(BaseModel):
+    """Configuration describing structured response expectations."""
+
+    type: Literal["json_schema"]
+    json_schema: dict[str, Any]
+    response_format: Literal["json_object"] = "json_object"
+
+
 class LLMCompletionRequest(BaseModel):
     """Normalized request payload for the LLM service."""
 
@@ -41,6 +49,7 @@ class LLMCompletionRequest(BaseModel):
         default=None,
         description="Optional user identifier to thread provider level metadata and rate-limits.",
     )
+    structured_output: Optional[StructuredOutputConfig] = None
 
 
 class LLMCompletion(BaseModel):
@@ -54,6 +63,7 @@ class LLMCompletion(BaseModel):
         default=None,
         description="Provider-specific response body for observability/debugging.",
     )
+    structured_output: Optional[Any] = None
 
 
 class LLMError(Exception):

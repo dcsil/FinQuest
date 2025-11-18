@@ -7,7 +7,12 @@ from typing import Optional, Sequence
 
 from finquest_api.config import LLMSettings
 from .factory import build_llm_client
-from .models import LLMCompletion, LLMCompletionRequest, LLMMessage
+from .models import (
+    LLMCompletion,
+    LLMCompletionRequest,
+    LLMMessage,
+    StructuredOutputConfig,
+)
 
 
 class LLMService:
@@ -25,6 +30,7 @@ class LLMService:
         max_output_tokens: Optional[int] = None,
         model: Optional[str] = None,
         user_identifier: Optional[str] = None,
+        structured_output: Optional[StructuredOutputConfig] = None,
     ) -> LLMCompletion:
         """
         Convenience helper that builds and dispatches a request composed of chat messages.
@@ -35,6 +41,7 @@ class LLMService:
             temperature=temperature,
             max_output_tokens=max_output_tokens,
             user_identifier=user_identifier,
+            structured_output=structured_output,
         )
         return await self._client.acomplete(request)
 
