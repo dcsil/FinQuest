@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import health, api, auth
 from .config import settings
-from .routers import portfolio
+from .routers import portfolio, users, modules
 
 # Create FastAPI app instance
 app = FastAPI(
@@ -29,6 +29,8 @@ app.add_middleware(
 app.include_router(health.router, tags=["health"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(api.router, prefix="/api/v1", tags=["api"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(modules.router, prefix="/api/v1/modules", tags=["modules"])
 
 # Include portfolio router
 app.include_router(portfolio.router, prefix="/api", tags=["portfolio"])

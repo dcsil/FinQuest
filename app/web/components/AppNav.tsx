@@ -71,6 +71,12 @@ export const AppNav = () => {
                         >
                             Portfolio
                         </Button>
+                        <Button
+                            variant={router.pathname === '/learn' ? 'light' : 'subtle'}
+                            onClick={() => router.push('/learn')}
+                        >
+                            Learn
+                        </Button>
                     </Group>
                     <Group gap="md">
                         <ColorSchemeToggle />

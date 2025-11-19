@@ -83,3 +83,72 @@ class SnapshotsResponse(BaseModel):
     """Portfolio valuation snapshots"""
     baseCurrency: str
     series: list[SnapshotPoint]
+
+
+# ---------- User Profile Schemas ----------
+
+
+class UserProfile(BaseModel):
+    """User profile with financial goals"""
+    financialGoals: Optional[str] = None
+    investingExperience: Optional[int] = None
+    age: Optional[int] = None
+    annualIncome: Optional[str] = None
+    investmentAmount: Optional[str] = None
+    riskTolerance: Optional[str] = None
+
+
+class UpdateProfileRequest(UserProfile):
+    """Request to update user profile"""
+    pass
+
+
+# ---------- Suggestion Schemas ----------
+
+
+class SuggestionResponse(BaseModel):
+    """Personalized suggestion"""
+    id: str
+    reason: str
+    confidence: Optional[float]
+    moduleId: Optional[str]
+    status: str
+    metadata: Optional[dict] = None
+
+
+# ---------- Learning Module Schemas ----------
+
+
+class ModuleChoice(BaseModel):
+    """Choice for a quiz question"""
+    text: str
+    isCorrect: bool
+
+
+class ModuleQuestion(BaseModel):
+    """Quiz question"""
+    question: str
+    choices: list[ModuleChoice]
+    explanation: Optional[str] = None
+
+
+class ModuleContent(BaseModel):
+    """Full learning module content"""
+    id: Optional[str] = None
+    title: str
+    body: str  # Markdown content
+    questions: list[ModuleQuestion]
+
+
+class ModuleAttemptRequest(BaseModel):
+    """Request to record a module attempt"""
+    score: int
+    max_score: int
+    passed: bool
+
+
+class ModuleAttemptResponse(BaseModel):
+    """Response after recording a module attempt"""
+    status: str
+    attempt_id: str
+    completed: bool

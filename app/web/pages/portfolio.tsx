@@ -26,8 +26,10 @@ import { AppNav } from '@/components/AppNav';
 import { AddPositionDialog } from '@/components/AddPositionDialog';
 import { AllocationChart } from '@/components/AllocationChart';
 import { ValueChart, type TimeRange } from '@/components/ValueChart';
-import { portfolioApi } from '@/lib/api';
+import { SuggestionsWidget } from '@/components/SuggestionsWidget';
+import { portfolioApi, usersApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
+import type { Suggestion } from '@/types/learning';
 import { format, subDays, startOfYear } from 'date-fns';
 
 /**
@@ -53,22 +55,39 @@ const ChartSkeleton = () => (
 const PortfolioPage = () => {
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [dialogOpened, setDialogOpened] = useState(false);
 
     const loadPortfolio = async () => {
+        console.log('Loading portfolio...');
         try {
             setLoading(true);
             setError(null);
             const data = await portfolioApi.getPortfolio();
+            console.log('Portfolio loaded:', data);
             setPortfolio(data);
         } catch (err) {
+            console.error('Error loading portfolio:', err);
             setError(err instanceof Error ? err.message : 'Failed to load portfolio');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadSuggestions = async () => {
+        try {
+            setLoadingSuggestions(true);
+            const data = await usersApi.getSuggestions();
+            setSuggestions(data);
+        } catch (err) {
+            console.error('Failed to load suggestions:', err);
+        } finally {
+            setLoadingSuggestions(false);
         }
     };
 
@@ -141,6 +160,13 @@ const PortfolioPage = () => {
         loadSnapshots(timeRange);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run on mount
+
+    // Load suggestions after portfolio is loaded
+    useEffect(() => {
+        if (portfolio) {
+            loadSuggestions();
+        }
+    }, [portfolio]);
 
     // Reload snapshots when time range changes
     useEffect(() => {
@@ -342,6 +368,9 @@ const PortfolioPage = () => {
                                     </Card>
                                 </Grid.Col>
                             </Grid>
+
+                            {/* AI Suggestions Widget */}
+                            <SuggestionsWidget suggestions={suggestions} loading={loadingSuggestions} />
 
                             {/* Holdings Table */}
                             <Paper shadow="sm" p="lg" radius="md" withBorder>
