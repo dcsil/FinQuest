@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from ..auth_utils import get_current_user
 from ..db.models import User, OnboardingResponse, Suggestion
-from ..db.session import get_session
+from ..db.session import get_session, SessionLocal
 from ..schemas import UpdateProfileRequest, SuggestionResponse
 from ..services.llm.service import LLMService
 from ..services.module_generator import ModuleGenerator
@@ -23,14 +23,18 @@ def get_suggestion_generator():
 
 async def generate_suggestions_task(
     suggestion_generator: SuggestionGenerator,
-    db: Session,
-    user: User
+    user_id: str
 ):
     """Background task to generate suggestions"""
+    db = SessionLocal()
     try:
-        await suggestion_generator.generate_suggestions_for_user(db, user)
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            await suggestion_generator.generate_suggestions_for_user(db, user)
     except Exception as e:
         print(f"Error generating suggestions in background: {e}")
+    finally:
+        db.close()
 
 @router.post("/financial-profile", status_code=status.HTTP_201_CREATED)
 async def update_financial_profile(
@@ -57,7 +61,7 @@ async def update_financial_profile(
         db.refresh(onboarding_response)
         
         # Trigger initial suggestion generation in background
-        background_tasks.add_task(generate_suggestions_task, suggestion_generator, db, user)
+        background_tasks.add_task(generate_suggestions_task, suggestion_generator, str(user.id))
         
         return {
             "status": "ok",
@@ -93,7 +97,7 @@ async def get_suggestions(
         
         # If no suggestions, generate them in background
         if not suggestions:
-            background_tasks.add_task(generate_suggestions_task, suggestion_generator, db, user)
+            background_tasks.add_task(generate_suggestions_task, suggestion_generator, str(user.id))
             return []
 
         return [
