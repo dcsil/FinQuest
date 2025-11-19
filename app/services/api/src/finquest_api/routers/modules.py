@@ -1,7 +1,6 @@
 """
 Learning modules endpoints
 """
-from typing import List
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session

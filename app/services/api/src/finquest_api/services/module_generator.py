@@ -2,13 +2,11 @@
 Service for generating educational modules using LLM
 """
 import json
-from typing import Optional
-from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from ..db.models import User, Portfolio, Module, ModuleVersion, ModuleQuestion, ModuleChoice
-from ..schemas import ModuleContent, ModuleQuestion as SchemaModuleQuestion, ModuleChoice as SchemaModuleChoice
+from ..db.models import User, Module, ModuleVersion, ModuleQuestion, ModuleChoice
+from ..schemas import ModuleContent
 from .llm.service import LLMService
 from .llm.models import LLMMessage, StructuredOutputConfig
 from .llm.utils import get_gemini_compatible_schema

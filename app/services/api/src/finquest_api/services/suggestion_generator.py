@@ -6,7 +6,6 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from ..db.models import User, Suggestion, OnboardingResponse
-from ..schemas import SuggestionResponse
 from .llm.service import LLMService
 from .llm.models import LLMMessage, StructuredOutputConfig
 from .llm.utils import get_gemini_compatible_schema
