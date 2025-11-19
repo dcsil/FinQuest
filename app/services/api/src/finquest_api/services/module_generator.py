@@ -26,7 +26,7 @@ class ModuleGenerator:
         """
         Generate a tailored learning module for a user based on their profile and a specific topic.
         """
-        # 1. Gather Context
+        # Gather Context
         # We'll use the user's profile data (goals, experience, etc.)
         # and their portfolio summary if available.
         
@@ -46,15 +46,39 @@ class ModuleGenerator:
         else:
             profile_context += "No specific profile data available.\n"
 
-        # Get portfolio context (simplified for now)
+        # Get portfolio context
         portfolio_context = "Portfolio Context:\n"
         if user.portfolio:
-            # In a real scenario, we'd summarize holdings, asset allocation, etc.
-            portfolio_context += f"- Portfolio Value: {user.base_currency} (Value calculation pending)\n"
+            # Fetch latest valuation snapshot
+            from ..db.models import PortfolioValuationSnapshot
+            latest_snapshot = db.query(PortfolioValuationSnapshot).filter(
+                PortfolioValuationSnapshot.portfolio_id == user.portfolio.id
+            ).order_by(PortfolioValuationSnapshot.as_of.desc()).first()
+
+            if latest_snapshot:
+                portfolio_context += f"- Total Value: {latest_snapshot.total_value:,.2f} {user.base_currency}\n"
+                
+                if latest_snapshot.allocation_by_type:
+                    portfolio_context += "- Asset Allocation:\n"
+                    for asset_type, pct in latest_snapshot.allocation_by_type.items():
+                        portfolio_context += f"  * {asset_type}: {pct:.1f}%\n"
+                
+                if latest_snapshot.allocation_by_sector:
+                    # Sort sectors by percentage descending and take top 3
+                    sorted_sectors = sorted(
+                        latest_snapshot.allocation_by_sector.items(), 
+                        key=lambda x: x[1], 
+                        reverse=True
+                    )[:3]
+                    portfolio_context += "- Top Sectors:\n"
+                    for sector, pct in sorted_sectors:
+                        portfolio_context += f"  * {sector}: {pct:.1f}%\n"
+            else:
+                 portfolio_context += f"- Portfolio created but no valuation data available yet.\n"
         else:
             portfolio_context += "No portfolio created yet.\n"
 
-        # 2. Construct Prompt
+        # Construct Prompt
         system_prompt = (
             "You are an expert financial educator. Your goal is to create a personalized, "
             "short, and engaging learning module for a user based on their financial profile and current situation.\n"
@@ -78,7 +102,7 @@ class ModuleGenerator:
             "Each question must have 3-4 choices, one correct."
         )
 
-        # 3. Call LLM
+        # Call LLM
         messages = [
             LLMMessage(role="system", content=system_prompt),
             LLMMessage(role="user", content=user_prompt),
@@ -97,7 +121,7 @@ class ModuleGenerator:
             structured_output=structured_config
         )
 
-        # 4. Parse Output
+        # Parse Output
         try:
             content_dict = json.loads(completion.message.content)
             module_content = ModuleContent(**content_dict)
@@ -105,14 +129,17 @@ class ModuleGenerator:
             # Fallback or retry logic could go here
             raise ValueError(f"Failed to parse LLM output: {e}")
 
-        # 5. Save to Database
+        # Save to Database
         # Create Module
         import uuid
-        slug = f"generated-{user.id}-{topic.lower().replace(' ', '-')}-{uuid.uuid4()}"[:100] # Simple slug generation
-        # Ensure slug uniqueness logic would be needed in production
+        import hashlib
+
+        # Generate a short hash for uniqueness to prevent truncation collisions
+        content_hash = hashlib.md5(f"{user.id}-{topic}-{uuid.uuid4()}".encode()).hexdigest()[:8]
+        slug = f"generated-{topic.lower().replace(' ', '-')[:50]}-{content_hash}"
         
         new_module = Module(
-            slug=slug, # In reality, we'd need a better slug strategy
+            slug=slug,
             title=module_content.title,
             description=f"Personalized lesson on {topic}",
             is_active=True

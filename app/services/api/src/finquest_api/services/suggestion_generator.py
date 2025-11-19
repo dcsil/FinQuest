@@ -35,7 +35,7 @@ class SuggestionGenerator:
         Analyze user profile and portfolio to generate actionable suggestions.
         If a suggestion requires learning, it triggers module generation.
         """
-        # 1. Gather Context
+        # Gather Context
         # Get existing suggestions (shown or completed) to avoid duplicates
         existing_suggestions = db.query(Suggestion).filter(
             Suggestion.user_id == user.id,
@@ -60,13 +60,36 @@ class SuggestionGenerator:
 
         portfolio_context = "Portfolio Context:\n"
         if user.portfolio:
-            # In a real scenario, we'd summarize holdings, asset allocation, etc.
-            portfolio_context += f"- Portfolio Value: {user.base_currency} (Value calculation pending)\n"
-            # Add holdings summary here
+            # Fetch latest valuation snapshot
+            from ..db.models import PortfolioValuationSnapshot
+            latest_snapshot = db.query(PortfolioValuationSnapshot).filter(
+                PortfolioValuationSnapshot.portfolio_id == user.portfolio.id
+            ).order_by(PortfolioValuationSnapshot.as_of.desc()).first()
+
+            if latest_snapshot:
+                portfolio_context += f"- Total Value: {latest_snapshot.total_value:,.2f} {user.base_currency}\n"
+                
+                if latest_snapshot.allocation_by_type:
+                    portfolio_context += "- Asset Allocation:\n"
+                    for asset_type, pct in latest_snapshot.allocation_by_type.items():
+                        portfolio_context += f"  * {asset_type}: {pct:.1f}%\n"
+                
+                if latest_snapshot.allocation_by_sector:
+                    # Sort sectors by percentage descending and take top 3
+                    sorted_sectors = sorted(
+                        latest_snapshot.allocation_by_sector.items(), 
+                        key=lambda x: x[1], 
+                        reverse=True
+                    )[:3]
+                    portfolio_context += "- Top Sectors:\n"
+                    for sector, pct in sorted_sectors:
+                        portfolio_context += f"  * {sector}: {pct:.1f}%\n"
+            else:
+                 portfolio_context += f"- Portfolio created but no valuation data available yet.\n"
         else:
             portfolio_context += "No portfolio created yet.\n"
 
-        # 2. Construct Prompt
+        # Construct Prompt
         system_prompt = (
             "You are an expert financial advisor AI. Your goal is to analyze a user's financial profile "
             "and portfolio to identify gaps, risks, or opportunities.\n"
@@ -86,7 +109,7 @@ class SuggestionGenerator:
             "or alignment with their risk tolerance."
         )
 
-        # 3. Call LLM
+        # Call LLM
         messages = [
             LLMMessage(role="system", content=system_prompt),
             LLMMessage(role="user", content=user_prompt),
@@ -103,7 +126,7 @@ class SuggestionGenerator:
             structured_output=structured_config
         )
 
-        # 4. Parse Output & Generate Modules
+        # Parse Output & Generate Modules
         try:
             content_dict = json.loads(completion.message.content)
             suggestion_list = SuggestionList(**content_dict)
