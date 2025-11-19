@@ -7,7 +7,7 @@ export interface UserProfile {
     riskTolerance?: string;
 }
 
-export interface UpdateProfileRequest extends UserProfile {}
+export type UpdateProfileRequest = UserProfile;
 
 export interface UpdateProfileResponse {
     status: string;
