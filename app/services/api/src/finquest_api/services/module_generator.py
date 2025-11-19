@@ -74,7 +74,7 @@ class ModuleGenerator:
                     for sector, pct in sorted_sectors:
                         portfolio_context += f"  * {sector}: {pct:.1f}%\n"
             else:
-                 portfolio_context += f"- Portfolio created but no valuation data available yet.\n"
+                 portfolio_context += "- Portfolio created but no valuation data available yet.\n"
         else:
             portfolio_context += "No portfolio created yet.\n"
 
