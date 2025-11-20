@@ -25,6 +25,8 @@ import FinQuestLogo from "../assets/FinQuestLogo.png";
 import GradientBackground from "@/components/GradientBackground";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/router";
+import { usersApi } from "@/lib/api";
 
 interface OnboardingData {
     financialGoals: string;
@@ -74,6 +76,7 @@ const Onboarding = () => {
     const [mounted, setMounted] = useState(false);
     const { colorScheme } = useMantineColorScheme();
     const { user, signOut } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
@@ -107,12 +110,15 @@ const Onboarding = () => {
     const handleComplete = async () => {
         setLoading(true);
 
-        // Mock API call
-        setTimeout(() => {
-            console.log("Onboarding completed:", data);
+        try {
+            await usersApi.updateFinancialProfile(data);
             setLoading(false);
-            alert("Onboarding completed! (Mock)");
-        }, 1000);
+            router.push('/dashboard');
+        } catch (error) {
+            console.error("Onboarding failed:", error);
+            setLoading(false);
+            alert("Failed to save onboarding data. Please try again.");
+        }
     };
 
     const renderStep = () => {

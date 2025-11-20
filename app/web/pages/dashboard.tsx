@@ -13,14 +13,18 @@ import {
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
 import { ValueChart, type TimeRange } from '@/components/ValueChart';
-import { portfolioApi } from '@/lib/api';
+import { SuggestionsWidget } from '@/components/SuggestionsWidget';
+import { portfolioApi, usersApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
+import type { Suggestion } from '@/types/learning';
 import { format, subDays, startOfYear } from 'date-fns';
 
 const DashboardPage = () => {
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [, setLoading] = useState<boolean>(true);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
 
@@ -33,6 +37,18 @@ const DashboardPage = () => {
             console.error('Failed to load portfolio:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadSuggestions = async () => {
+        try {
+            setLoadingSuggestions(true);
+            const data = await usersApi.getSuggestions();
+            setSuggestions(data);
+        } catch (err) {
+            console.error('Failed to load suggestions:', err);
+        } finally {
+            setLoadingSuggestions(false);
         }
     };
 
@@ -103,6 +119,7 @@ const DashboardPage = () => {
     useEffect(() => {
         loadPortfolio();
         loadSnapshots(timeRange);
+        loadSuggestions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run on mount
 
@@ -199,6 +216,9 @@ const DashboardPage = () => {
                                     )}
                                 </Paper>
                             </div>
+
+                            {/* AI Suggestions Widget */}
+                            <SuggestionsWidget suggestions={suggestions} loading={loadingSuggestions} />
                         </Stack>
                     </Container>
                 </AppShell.Main>

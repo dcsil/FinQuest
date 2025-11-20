@@ -8,6 +8,15 @@ import type {
     PortfolioHoldingsResponse,
     SnapshotsResponse,
 } from '@/types/portfolio';
+import type {
+    UpdateProfileRequest,
+    UpdateProfileResponse,
+} from '@/types/user';
+import type {
+    Suggestion,
+    ModuleContent,
+    ModuleAttemptResponse,
+} from '@/types/learning';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -99,6 +108,50 @@ export const portfolioApi = {
         
         return apiRequest<{ status: string; message: string; count: number }>(endpoint, {
             method: 'POST',
+        });
+    },
+};
+
+/**
+ * Users API client
+ */
+export const usersApi = {
+    /**
+     * Update user's financial profile
+     */
+    updateFinancialProfile: async (data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
+        return apiRequest<UpdateProfileResponse>('/api/v1/users/financial-profile', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    /**
+     * Get personalized suggestions
+     */
+    getSuggestions: async (): Promise<Suggestion[]> => {
+        return apiRequest<Suggestion[]>('/api/v1/users/suggestions');
+    },
+};
+
+/**
+ * Modules API client
+ */
+export const modulesApi = {
+    /**
+     * Get full content for a specific module
+     */
+    getModule: async (moduleId: string): Promise<ModuleContent> => {
+        return apiRequest<ModuleContent>(`/api/v1/modules/${moduleId}`);
+    },
+
+    /**
+     * Submit quiz attempt
+     */
+    submitAttempt: async (moduleId: string, score: number, maxScore: number, passed: boolean): Promise<ModuleAttemptResponse> => {
+        return apiRequest<ModuleAttemptResponse>(`/api/v1/modules/${moduleId}/attempt`, {
+            method: 'POST',
+            body: JSON.stringify({ score, max_score: maxScore, passed }),
         });
     },
 };
