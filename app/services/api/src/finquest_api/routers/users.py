@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from ..auth_utils import get_current_user
 from ..db.models import User, OnboardingResponse, Suggestion
-from ..db.session import get_session, SessionLocal
+from ..db.session import get_session, SessionLocal, get_engine
 from ..schemas import UpdateProfileRequest, SuggestionResponse
 from ..services.llm.service import LLMService
 from ..services.module_generator import ModuleGenerator
@@ -26,7 +26,7 @@ async def generate_suggestions_task(
     user_id: str
 ):
     """Background task to generate suggestions"""
-    db = SessionLocal()
+    db = SessionLocal(bind=get_engine())
     try:
         user = db.query(User).filter(User.id == user_id).first()
         if user:
