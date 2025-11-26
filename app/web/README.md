@@ -10,6 +10,37 @@ Install dependencies:
 pnpm install
 ```
 
+### Environment Variables
+
+Create a `.env.local` file in the `app/web/` directory with the following variables:
+
+```bash
+# Supabase Configuration (required)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# API Configuration (optional - defaults to http://localhost:8000 for local dev)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+**For Production (e.g., Vercel):**
+
+- Set `NEXT_PUBLIC_API_URL` to `https://finquest-api.onrender.com`
+- The API URL automatically switches based on the environment variable
+
+### Supabase OAuth Configuration
+
+For Google OAuth to work correctly in both development and production, you need to configure redirect URLs in your Supabase dashboard:
+
+1. Go to your Supabase project dashboard
+2. Navigate to **Authentication** → **URL Configuration**
+3. Add the following to **Redirect URLs**:
+   - `http://localhost:3000/` (for local development)
+   - `https://your-production-domain.com/` (for production)
+4. Set the **Site URL** to your production URL (or leave it as default)
+
+**Important:** If localhost URLs are not whitelisted in Supabase, OAuth redirects will default to the Site URL, causing redirects to production even when running locally.
+
 Then, run the development server:
 
 ````bash
