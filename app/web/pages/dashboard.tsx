@@ -9,6 +9,7 @@ import {
     Stack,
     Paper,
     AppShell,
+    Skeleton,
 } from '@mantine/core';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
@@ -19,11 +20,35 @@ import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio
 import type { Suggestion } from '@/types/learning';
 import { format, subDays, startOfYear } from 'date-fns';
 
+/**
+ * Dashboard skeleton component for initial loading state
+ */
+const DashboardSkeleton = () => (
+    <Stack gap="xl">
+        {/* Header */}
+        <Skeleton height={36} width={200} />
+
+        {/* My Investments Section */}
+        <div>
+            <Skeleton height={28} width={180} mb="md" />
+            <Paper shadow="sm" p="lg" radius="md" withBorder>
+                <Skeleton height={400} radius="md" />
+            </Paper>
+        </div>
+
+        {/* AI Suggestions Widget Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Skeleton height={28} width={200} mb="md" />
+            <Skeleton height={100} radius="md" />
+        </Paper>
+    </Stack>
+);
+
 const DashboardPage = () => {
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
@@ -158,6 +183,21 @@ const DashboardPage = () => {
         const sign = numValue >= 0 ? '+' : '';
         return `${sign}${numValue.toFixed(2)}%`;
     };
+
+    if (loading && !portfolio) {
+        return (
+            <ProtectedRoute>
+                <AppShell header={{ height: 70 }}>
+                    <AppNav />
+                    <AppShell.Main>
+                        <Container size="xl" py="xl">
+                            <DashboardSkeleton />
+                        </Container>
+                    </AppShell.Main>
+                </AppShell>
+            </ProtectedRoute>
+        );
+    }
 
     return (
         <ProtectedRoute>

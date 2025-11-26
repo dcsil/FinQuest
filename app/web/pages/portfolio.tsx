@@ -15,7 +15,6 @@ import {
     Badge,
     Grid,
     Paper,
-    Loader,
     Alert,
     AppShell,
     Skeleton,
@@ -50,6 +49,74 @@ const ChartSkeleton = () => (
             <Skeleton height={400} radius="md" />
         </div>
     </div>
+);
+
+/**
+ * Portfolio page skeleton component for initial loading state
+ */
+const PortfolioSkeleton = () => (
+    <Stack gap="xl">
+        {/* First Row: Chart (2/3) + Pie Chart (1/3) */}
+        <Grid>
+            <Grid.Col span={{ base: 12, md: 8 }}>
+                <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <ChartSkeleton />
+                </Paper>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+                <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <Skeleton height={24} width={150} mb="md" />
+                    <Skeleton height={300} radius="md" />
+                </Paper>
+            </Grid.Col>
+        </Grid>
+
+        {/* Second Row: Three Widgets */}
+        <Grid>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={100} mb="xs" />
+                    <Skeleton height={32} width={150} mt="xs" />
+                </Card>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={120} mb="xs" />
+                    <Skeleton height={32} width={150} mt="xs" />
+                    <Skeleton height={16} width={80} mt={4} />
+                </Card>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={100} mb="xs" />
+                    <Group gap="xs" mt="xs">
+                        <Skeleton height={20} width={20} radius="md" />
+                        <Skeleton height={32} width={120} />
+                    </Group>
+                    <Skeleton height={16} width={80} mt={4} />
+                </Card>
+            </Grid.Col>
+        </Grid>
+
+        {/* AI Suggestions Widget Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Skeleton height={28} width={200} mb="md" />
+            <Skeleton height={100} radius="md" />
+        </Paper>
+
+        {/* Holdings Table Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Group justify="space-between" align="center" mb="md">
+                <Skeleton height={28} width={120} />
+                <Skeleton height={36} width={140} radius="md" />
+            </Group>
+            <Stack gap="xs">
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} height={48} radius="md" />
+                ))}
+            </Stack>
+        </Paper>
+    </Stack>
 );
 
 const PortfolioPage = () => {
@@ -212,7 +279,11 @@ const PortfolioPage = () => {
                     <AppNav />
                     <AppShell.Main>
                         <Container size="xl" py="xl">
-                            <Loader size="xl" />
+                            <Stack gap="xl">
+                                {/* Header - Always render since it's not dynamic */}
+                                <Title order={1}>Portfolio</Title>
+                                <PortfolioSkeleton />
+                            </Stack>
                         </Container>
                     </AppShell.Main>
                 </AppShell>

@@ -11,9 +11,8 @@ import {
     Button,
     Group,
     ThemeIcon,
-    Loader,
-    Center,
     AppShell,
+    Skeleton,
 } from "@mantine/core";
 import { IconBook, IconChartBar, IconAlertTriangle, IconArrowRight } from "@tabler/icons-react";
 import { AppNav } from "@/components/AppNav";
@@ -21,6 +20,42 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { usersApi } from "@/lib/api";
 import { useRouter } from "next/router";
 import type { Suggestion } from "@/types/learning";
+
+/**
+ * Learning page skeleton component for loading state
+ */
+const LearnSkeleton = () => (
+    <Stack gap="xl">
+        <div>
+            <Skeleton height={36} width={300} mb="xs" />
+            <Skeleton height={20} width={500} />
+        </div>
+
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} shadow="sm" padding="lg" radius="md" withBorder style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Card.Section withBorder inheritPadding py="xs">
+                        <Group justify="space-between">
+                            <Group gap="xs">
+                                <Skeleton height={36} width={36} radius="md" />
+                                <Skeleton height={20} width={100} />
+                            </Group>
+                            <Skeleton height={24} width={80} radius="xl" />
+                        </Group>
+                    </Card.Section>
+
+                    <Stack mt="md" mb="md" style={{ flex: 1 }}>
+                        <Skeleton height={16} width="100%" />
+                        <Skeleton height={16} width="90%" />
+                        <Skeleton height={16} width="80%" />
+                    </Stack>
+
+                    <Skeleton height={36} width="100%" radius="md" />
+                </Card>
+            ))}
+        </SimpleGrid>
+    </Stack>
+);
 
 const Learn = () => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -89,9 +124,7 @@ const Learn = () => {
                             </div>
 
                             {loading ? (
-                                <Center h={200}>
-                                    <Loader size="lg" />
-                                </Center>
+                                <LearnSkeleton />
                             ) : suggestions.length === 0 ? (
                                 <Card withBorder padding="xl" radius="md">
                                     <Text ta="center" size="lg">
