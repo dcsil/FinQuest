@@ -117,6 +117,13 @@ export const portfolioApi = {
  */
 export const usersApi = {
     /**
+     * Check if user has completed onboarding
+     */
+    getOnboardingStatus: async (): Promise<{ completed: boolean }> => {
+        return apiRequest<{ completed: boolean }>('/api/v1/users/onboarding-status');
+    },
+
+    /**
      * Update user's financial profile
      */
     updateFinancialProfile: async (data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {

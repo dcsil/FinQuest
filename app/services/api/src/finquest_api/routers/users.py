@@ -36,6 +36,30 @@ async def generate_suggestions_task(
     finally:
         db.close()
 
+@router.get("/onboarding-status")
+async def get_onboarding_status(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
+):
+    """
+    Check if user has completed onboarding.
+    Returns True if user has an onboarding response, False otherwise.
+    """
+    try:
+        onboarding_response = db.query(OnboardingResponse).filter(
+            OnboardingResponse.user_id == user.id
+        ).order_by(OnboardingResponse.submitted_at.desc()).first()
+        
+        return {
+            "completed": onboarding_response is not None
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to check onboarding status: {str(e)}"
+        )
+
+
 @router.post("/financial-profile", status_code=status.HTTP_201_CREATED)
 async def update_financial_profile(
     request: UpdateProfileRequest,

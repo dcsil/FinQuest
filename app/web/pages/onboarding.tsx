@@ -75,12 +75,29 @@ const Onboarding = () => {
     const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { colorScheme } = useMantineColorScheme();
-    const { user, signOut } = useAuth();
+    const { user, signOut, loading: authLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        const checkOnboardingStatus = async () => {
+            if (!authLoading && user) {
+                try {
+                    const { completed } = await usersApi.getOnboardingStatus();
+                    if (completed) {
+                        router.push('/dashboard');
+                    }
+                } catch (error) {
+                    console.error("Error checking onboarding status:", error);
+                }
+            }
+        };
+
+        checkOnboardingStatus();
+    }, [user, authLoading, router]);
 
     const [data, setData] = useState<OnboardingData>({
         financialGoals: "Saving for retirement",
