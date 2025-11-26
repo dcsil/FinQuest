@@ -36,17 +36,22 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3000",
+        "https://tryfinquest.vercel.app",
     ]
     
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
         """Parse CORS origins from comma-separated string or list"""
+        if v is None:
+            return []
         if isinstance(v, str):
             # Split by comma and strip whitespace, remove empty strings
             origins = [origin.strip() for origin in v.split(",") if origin.strip()]
             # Remove trailing slashes for consistency
             return [origin.rstrip("/") for origin in origins]
+        if isinstance(v, list):
+            return [str(origin).rstrip("/") for origin in v if origin]
         return v
     
     # Server Configuration
