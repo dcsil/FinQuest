@@ -31,12 +31,18 @@ class Settings(BaseSettings):
     API_VERSION: str = "0.1.0"
     DEBUG: bool = True
     
-    # CORS Configuration
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-    ]
+    # CORS Configuration - stored as string, converted to list via property
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,https://tryfinquest.vercel.app"
+    
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Parse CORS origins from comma-separated string to list"""
+        if not self.ALLOWED_ORIGINS:
+            return []
+        # Split by comma and strip whitespace, remove empty strings
+        origins = [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+        # Remove trailing slashes for consistency
+        return [origin.rstrip("/") for origin in origins]
     
     # Server Configuration
     HOST: str = "0.0.0.0"
