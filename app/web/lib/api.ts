@@ -9,6 +9,7 @@ import type {
     SnapshotsResponse,
 } from '@/types/portfolio';
 import type {
+    UserProfile,
     UpdateProfileRequest,
     UpdateProfileResponse,
 } from '@/types/user';
@@ -121,6 +122,13 @@ export const usersApi = {
      */
     getOnboardingStatus: async (): Promise<{ completed: boolean }> => {
         return apiRequest<{ completed: boolean }>('/api/v1/users/onboarding-status');
+    },
+
+    /**
+     * Get user's financial profile
+     */
+    getFinancialProfile: async (): Promise<UserProfile> => {
+        return apiRequest<UserProfile>('/api/v1/users/financial-profile');
     },
 
     /**
