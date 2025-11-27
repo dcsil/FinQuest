@@ -101,12 +101,22 @@ uv add <package-name>
 ## Testing
 
 ```bash
-# Install test dependencies
-uv add --dev pytest pytest-asyncio httpx
+# Install test dependencies (includes pytest-cov for coverage)
+uv sync --group dev
 
 # Run tests
 uv run pytest
+
+# Run tests with coverage report
+uv run pytest --cov=src/finquest_api --cov-report=term-missing --cov-report=html
+
+# Run tests with coverage summary only
+uv run pytest --cov=src/finquest_api --cov-report=term-missing:skip-covered
 ```
+
+Coverage reports:
+- Terminal output: Shows coverage percentage and missing lines
+- HTML report: Generated in `htmlcov/index.html` (open in browser for detailed view)
 
 ## Next Steps
 
