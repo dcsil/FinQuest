@@ -23,125 +23,38 @@ import { AppNav } from '@/components/AppNav';
 import { BadgesGrid } from '@/components/BadgesGrid';
 import { AppShell } from '@mantine/core';
 import { useAuth } from '@/contexts/AuthContext';
-import { usersApi } from '@/lib/api';
-import type { UserProfile } from '@/types/user';
-
-interface ProfileFieldProps {
-    label: string;
-    value: string | number | undefined;
-    icon: React.ReactNode;
-}
-
-const ProfileField = ({ label, value, icon }: ProfileFieldProps) => {
-    const theme = useMantineTheme();
-    const { colorScheme } = useMantineColorScheme();
-    const isDark = colorScheme === 'dark';
-
-    if (value === undefined || value === null || value === '') {
-        return null;
-    }
-
-    return (
-        <Group gap="md" p="md" style={{
-            borderRadius: '8px',
-            backgroundColor: isDark ? theme.colors.dark[7] : theme.colors.gray[0],
-            border: `1px solid ${isDark ? theme.colors.dark[5] : theme.colors.gray[2]}`,
-        }}>
-            <div style={{ color: isDark ? theme.colors.blue[4] : theme.colors.blue[6] }}>
-                {icon}
-            </div>
-            <div style={{ flex: 1 }}>
-                <Text size="sm" c="dimmed" fw={500}>
-                    {label}
-                </Text>
-                <Text size="lg" fw={600} c={isDark ? theme.colors.gray[0] : theme.colors.dark[9]}>
-                    {typeof value === 'number' ? value.toString() : value}
-                </Text>
-            </div>
-        </Group>
-    );
-};
-
-const countries = [
-    { value: "US", label: "United States" },
-    { value: "CA", label: "Canada" },
-    { value: "GB", label: "United Kingdom" },
-    { value: "AU", label: "Australia" },
-    { value: "DE", label: "Germany" },
-    { value: "FR", label: "France" },
-    { value: "IT", label: "Italy" },
-    { value: "ES", label: "Spain" },
-    { value: "NL", label: "Netherlands" },
-    { value: "BE", label: "Belgium" },
-    { value: "CH", label: "Switzerland" },
-    { value: "AT", label: "Austria" },
-    { value: "SE", label: "Sweden" },
-    { value: "NO", label: "Norway" },
-    { value: "DK", label: "Denmark" },
-    { value: "FI", label: "Finland" },
-    { value: "IE", label: "Ireland" },
-    { value: "PT", label: "Portugal" },
-    { value: "PL", label: "Poland" },
-    { value: "CZ", label: "Czech Republic" },
-    { value: "GR", label: "Greece" },
-    { value: "JP", label: "Japan" },
-    { value: "CN", label: "China" },
-    { value: "IN", label: "India" },
-    { value: "SG", label: "Singapore" },
-    { value: "HK", label: "Hong Kong" },
-    { value: "KR", label: "South Korea" },
-    { value: "TW", label: "Taiwan" },
-    { value: "NZ", label: "New Zealand" },
-    { value: "BR", label: "Brazil" },
-    { value: "MX", label: "Mexico" },
-    { value: "AR", label: "Argentina" },
-    { value: "ZA", label: "South Africa" },
-    { value: "AE", label: "United Arab Emirates" },
-    { value: "IL", label: "Israel" },
-    { value: "TR", label: "Turkey" },
-    { value: "RU", label: "Russia" },
-];
+import { ProfileField } from '@/features/profile/components/ProfileField';
+import { useProfile } from '@/features/profile/hooks/useProfile';
+import { formatExperience, formatIncome, formatInvestmentAmount } from '@/features/profile/utils/formatters';
+import { getUserDisplayName, getUserInitial } from '@/features/profile/utils/user';
+import { countries } from '@/features/profile/constants';
 
 const ProfilePage = () => {
     const { user } = useAuth();
     const theme = useMantineTheme();
     const { colorScheme } = useMantineColorScheme();
     const isDark = colorScheme === 'dark';
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { profile, loading, loadProfile, updateProfile } = useProfile();
     const [editingCountry, setEditingCountry] = useState<boolean>(false);
     const [countryValue, setCountryValue] = useState<string>("US");
     const [savingCountry, setSavingCountry] = useState<boolean>(false);
 
     useEffect(() => {
-        const loadProfile = async () => {
-            try {
-                setLoading(true);
-                const data = await usersApi.getFinancialProfile();
-                setProfile(data);
+        if (user) {
+            loadProfile().then((data) => {
                 if (data?.country) {
                     setCountryValue(data.country);
                 }
-            } catch (err) {
-                console.error('Failed to load profile:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (user) {
-            loadProfile();
+            });
         }
-    }, [user]);
+    }, [user, loadProfile]);
 
     const handleSaveCountry = async () => {
         if (!profile) return;
 
         setSavingCountry(true);
         try {
-            const updatedProfile = { ...profile, country: countryValue };
-            await usersApi.updateFinancialProfile(updatedProfile);
-            setProfile(updatedProfile);
+            await updateProfile({ country: countryValue });
             setEditingCountry(false);
         } catch (err) {
             console.error('Failed to update country:', err);
@@ -149,53 +62,6 @@ const ProfilePage = () => {
         } finally {
             setSavingCountry(false);
         }
-    };
-
-    const getUserDisplayName = () => {
-        if (user?.user_metadata?.full_name) {
-            return user.user_metadata.full_name;
-        }
-        if (user?.email) {
-            return user.email.split('@')[0];
-        }
-        return 'User';
-    };
-
-    const getUserInitial = () => {
-        const name = getUserDisplayName();
-        return name.charAt(0).toUpperCase();
-    };
-
-    const formatExperience = (years?: number) => {
-        if (years === undefined || years === null) return undefined;
-        if (years === 0) return 'Less than 1 year';
-        if (years === 1) return '1 year';
-        return `${years} years`;
-    };
-
-    const formatIncome = (income?: string) => {
-        if (!income) return undefined;
-        const incomeMap: Record<string, string> = {
-            '0-25k': '$0 - $25,000',
-            '25k-50k': '$25,000 - $50,000',
-            '50k-75k': '$50,000 - $75,000',
-            '75k-100k': '$75,000 - $100,000',
-            '100k-150k': '$100,000 - $150,000',
-            '150k+': '$150,000+',
-        };
-        return incomeMap[income] || income;
-    };
-
-    const formatInvestmentAmount = (amount?: string) => {
-        if (!amount) return undefined;
-        const amountMap: Record<string, string> = {
-            '0-1k': '$0 - $1,000',
-            '1k-5k': '$1,000 - $5,000',
-            '5k-10k': '$5,000 - $10,000',
-            '10k-25k': '$10,000 - $25,000',
-            '25k+': '$25,000+',
-        };
-        return amountMap[amount] || amount;
     };
 
     return (
@@ -215,11 +81,11 @@ const ProfilePage = () => {
                             <Paper shadow="sm" p="lg" radius="md" withBorder>
                                 <Group gap="lg" mb="lg">
                                     <Avatar size={80} radius="xl" color="blue">
-                                        {getUserInitial()}
+                                        {getUserInitial(user)}
                                     </Avatar>
                                     <div style={{ flex: 1 }}>
                                         <Title order={2} mb="xs">
-                                            {getUserDisplayName()}
+                                            {getUserDisplayName(user)}
                                         </Title>
                                         <Group gap="xs" c="dimmed">
                                             <IconMail size={16} />

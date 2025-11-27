@@ -1,7 +1,7 @@
 /**
  * Portfolio Page
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import {
     Container,
@@ -26,10 +26,13 @@ import { AddPositionDialog } from '@/components/AddPositionDialog';
 import { AllocationChart } from '@/components/AllocationChart';
 import { ValueChart, type TimeRange } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
-import { portfolioApi, usersApi } from '@/lib/api';
-import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
+import { usersApi } from '@/lib/api';
 import type { Suggestion } from '@/types/learning';
-import { format, subDays, startOfYear } from 'date-fns';
+import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
+import { useSnapshots } from '@/features/portfolio/hooks/useSnapshots';
+import { getDateRange } from '@/features/portfolio/utils/dateRange';
+import { formatCurrency, formatPercentage, formatQuantity } from '@/features/portfolio/utils/formatters';
+import { calculateUnrealizedPLPercent, calculateDailyPLPercent } from '@/features/portfolio/utils/calculations';
 
 /**
  * Chart skeleton component for loading state
@@ -120,31 +123,11 @@ const PortfolioSkeleton = () => (
 );
 
 const PortfolioPage = () => {
-    const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
-    const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [loading, setLoading] = useState(true);
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
-    const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [dialogOpened, setDialogOpened] = useState(false);
-
-    const loadPortfolio = async () => {
-        console.log('Loading portfolio...');
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await portfolioApi.getPortfolio();
-            console.log('Portfolio loaded:', data);
-            setPortfolio(data);
-        } catch (err) {
-            console.error('Error loading portfolio:', err);
-            setError(err instanceof Error ? err.message : 'Failed to load portfolio');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { portfolio, loading, error, loadPortfolio } = usePortfolio();
+    const { snapshots, showSkeleton: showSnapshotsSkeleton, timeRange, setTimeRange, loadSnapshots } = useSnapshots('1m');
 
     const loadSuggestions = async () => {
         try {
@@ -158,73 +141,10 @@ const PortfolioPage = () => {
         }
     };
 
-    const getDateRange = useCallback((range: TimeRange): { from: string; to: string; granularity: string } => {
-        const to = new Date();
-        let from: Date;
-        let granularity: string;
-
-        switch (range) {
-            case '1d':
-                from = subDays(to, 1);
-                granularity = 'hourly';
-                break;
-            case '1w':
-                from = subDays(to, 7);
-                granularity = '6hourly';
-                break;
-            case '1m':
-                from = subDays(to, 30);
-                granularity = 'daily';
-                break;
-            case 'ytd':
-                from = startOfYear(to);
-                granularity = 'daily';
-                break;
-            case '1y':
-                from = subDays(to, 365);
-                granularity = 'weekly';
-                break;
-            default:
-                from = subDays(to, 30);
-                granularity = 'daily';
-        }
-
-        return {
-            from: format(from, 'yyyy-MM-dd'),
-            to: format(to, 'yyyy-MM-dd'),
-            granularity,
-        };
-    }, []);
-
-    const loadSnapshots = useCallback(async (range?: TimeRange) => {
-        try {
-            const rangeToUse = range || timeRange;
-            const { from, to, granularity } = getDateRange(rangeToUse);
-
-            setShowSnapshotsSkeleton(false);
-
-            // Set a timeout to show skeleton after 1 second
-            const skeletonTimeout = setTimeout(() => {
-                setShowSnapshotsSkeleton(true);
-            }, 1000);
-
-            try {
-                const data = await portfolioApi.getSnapshots(from, to, granularity);
-                setSnapshots(data.series);
-            } finally {
-                clearTimeout(skeletonTimeout);
-                setShowSnapshotsSkeleton(false);
-            }
-        } catch (err) {
-            console.error('Failed to load snapshots:', err);
-            setShowSnapshotsSkeleton(false);
-        }
-    }, [timeRange, getDateRange]);
-
     // Load portfolio and initial snapshots on mount
     useEffect(() => {
         loadPortfolio();
-        loadSnapshots(timeRange);
+        loadSnapshots('1m');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run on mount
 
@@ -243,33 +163,6 @@ const PortfolioPage = () => {
     const handleAddPositionSuccess = () => {
         loadPortfolio();
         loadSnapshots(timeRange);
-    };
-
-    const formatCurrency = (value: number | string | null | undefined, currency: string) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency || 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        }).format(numValue);
-    };
-
-    const formatPercentage = (value: number | string | null | undefined) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        const sign = numValue >= 0 ? '+' : '';
-        return `${sign}${numValue.toFixed(2)}%`;
-    };
-
-    const formatQuantity = (value: number | string | null | undefined) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        return numValue.toFixed(4);
     };
 
     if (loading && !portfolio) {
@@ -316,14 +209,8 @@ const PortfolioPage = () => {
     };
 
     // Calculate percentages
-    const unrealizedPLPercent = totals.totalCostBasis !== 0
-        ? (Number(totals.unrealizedPL) / Number(totals.totalCostBasis)) * 100
-        : 0;
-
-    const previousValue = Number(totals.totalValue) - Number(totals.dailyPL);
-    const dailyPLPercent = previousValue !== 0 && totals.dailyPL !== 0
-        ? (Number(totals.dailyPL) / previousValue) * 100
-        : 0;
+    const unrealizedPLPercent = calculateUnrealizedPLPercent(totals);
+    const dailyPLPercent = calculateDailyPLPercent(totals);
 
     return (
         <ProtectedRoute>
