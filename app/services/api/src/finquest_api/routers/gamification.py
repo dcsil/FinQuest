@@ -48,6 +48,7 @@ class GamificationEventResponse(BaseModel):
     current_streak: int
     xp_gained: int
     level_up: bool
+    streak_incremented: bool
     new_badges: list[BadgeInfo]
     xp_to_next_level: int
 
@@ -83,6 +84,7 @@ async def handle_gamification_event(
     xp_gained = 0
     streak_incremented = False
     previous_level = stats.level
+    previous_streak = stats.current_streak
     
     # Parse quiz date if provided
     quiz_date: Optional[date] = None
@@ -130,6 +132,8 @@ async def handle_gamification_event(
             quiz_date = datetime.utcnow().date()
         
         streak_incremented = update_streak(db, stats, quiz_date)
+        # Only count as incremented if streak actually increased
+        streak_incremented = streak_incremented and stats.current_streak > previous_streak
         if streak_incremented:
             xp_gained += XP_REWARDS["streak_bonus"]
     
@@ -161,6 +165,7 @@ async def handle_gamification_event(
         current_streak=stats.current_streak,
         xp_gained=xp_gained,
         level_up=level_up,
+        streak_incremented=streak_incremented,
         new_badges=[BadgeInfo(**badge) for badge in new_badges],
         xp_to_next_level=xp_to_next,
     )

@@ -195,6 +195,7 @@ export interface GamificationEventResponse {
     current_streak: number;
     xp_gained: number;
     level_up: boolean;
+    streak_incremented: boolean;
     new_badges: BadgeInfo[];
     xp_to_next_level: number;
 }

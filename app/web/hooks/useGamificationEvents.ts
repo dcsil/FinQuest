@@ -13,15 +13,22 @@ export const useGamificationEvents = () => {
             try {
                 const response = await gamificationApi.sendEvent(event);
 
-                // Show XP toast
-                if (response.xp_gained > 0) {
-                    showXpToast(response.xp_gained);
+                // Show XP toast with source
+                // If streak incremented, show streak bonus XP separately
+                if (response.streak_incremented && event.event_type === 'quiz_completed') {
+                    // Calculate base quiz XP (without streak bonus)
+                    const streakBonusXp = 2; // From XP_REWARDS
+                    const baseXp = response.xp_gained - streakBonusXp;
+                    if (baseXp > 0) {
+                        showXpToast(baseXp, event.event_type);
+                    }
+                    showXpToast(streakBonusXp, 'streak_bonus');
+                } else if (response.xp_gained > 0) {
+                    showXpToast(response.xp_gained, event.event_type);
                 }
 
-                // Show streak toast if streak increased
-                if (event.event_type === 'quiz_completed' && response.current_streak > 0) {
-                    // Check if streak actually increased by comparing with previous state
-                    // For simplicity, we'll show it if current_streak > 0
+                // Show streak modal only if streak actually incremented
+                if (response.streak_incremented) {
                     showStreakToast(response.current_streak);
                 }
 

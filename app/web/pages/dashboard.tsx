@@ -217,13 +217,7 @@ const DashboardPage = () => {
                     <Container size="xl" py="xl">
                         <Stack gap="xl">
                             {/* Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                                <Title order={1}>Dashboard</Title>
-                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                    <StreakIndicator />
-                                    <XPBar />
-                                </div>
-                            </div>
+                            <Title order={1}>Dashboard</Title>
 
                             {/* My Investments Section */}
                             <div>

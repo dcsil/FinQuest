@@ -2,15 +2,16 @@
  * Application Navigation Component
  */
 import { useState, useEffect } from 'react';
-import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge } from '@mantine/core';
+import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge, UnstyledButton } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
 import { IconLogout, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import FinQuestLogo from '../assets/FinQuestLogo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGamification } from '@/contexts/GamificationContext';
+import { XPBar } from './XPBar';
+import { StreakIndicator } from './StreakIndicator';
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -45,23 +46,23 @@ const getLevelBorderColor = (level: number): string => {
 const ProfileAvatarWithLevel = () => {
     const { user } = useAuth();
     const { level } = useGamification();
-    const router = useRouter();
 
     const borderColor = getLevelBorderColor(level);
     const borderWidth = level >= 7 ? 3 : level >= 4 ? 2 : 1;
 
     return (
-        <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-            style={{ position: 'relative' }}
+        <UnstyledButton
+            style={{
+                position: 'relative',
+                display: 'inline-block',
+                cursor: 'pointer',
+            }}
         >
             <Avatar
                 src={null}
                 alt={user?.email || 'User'}
                 radius="xl"
                 style={{
-                    cursor: 'pointer',
                     border: `${borderWidth}px solid ${borderColor}`,
                     boxShadow: level >= 7 ? `0 0 8px ${borderColor}` : 'none',
                 }}
@@ -85,11 +86,13 @@ const ProfileAvatarWithLevel = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    pointerEvents: 'none',
+                    zIndex: 1,
                 }}
             >
                 {level}
             </Badge>
-        </motion.div>
+        </UnstyledButton>
     );
 };
 
@@ -137,7 +140,9 @@ export const AppNav = () => {
                             Learn
                         </Button>
                     </Group>
-                    <Group gap="md">
+                    <Group gap="sm">
+                        <StreakIndicator compact />
+                        <XPBar compact />
                         <ColorSchemeToggle />
                         <Menu shadow="md" width={200}>
                             <Menu.Target>
