@@ -37,6 +37,25 @@ const getConfidenceLabel = (confidence: number | null) => {
     return { label: 'Low Match', color: 'gray' };
 };
 
+const toTitleCase = (str: string): string => {
+    if (!str) return str;
+
+    // Words that should remain lowercase unless they're the first word
+    const smallWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'of', 'on', 'or', 'the', 'to', 'with'];
+
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map((word, index) => {
+            // Always capitalize the first word, or capitalize if it's not a small word
+            if (index === 0 || !smallWords.includes(word)) {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            return word;
+        })
+        .join(' ');
+};
+
 export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
     const router = useRouter();
 
@@ -44,7 +63,18 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
     const sortedSuggestions = [...suggestions];
 
     return (
-        <Box style={{ position: 'relative', padding: '2rem 0' }}>
+        <Box
+            style={{
+                position: 'relative',
+                padding: '2rem 0',
+                backgroundImage: `
+                    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+                `,
+                backgroundSize: '20px 20px',
+                backgroundPosition: '0 0',
+            }}
+        >
             <Stack gap={0} align="center">
                 {sortedSuggestions.map((suggestion, index) => {
                     const isCompleted = suggestion.status === "completed";
@@ -69,26 +99,6 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
 
                     return (
                         <Box key={suggestion.id} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
-                            {/* Connecting line */}
-                            {!isLast && (
-                                <Box
-                                    style={{
-                                        position: 'absolute',
-                                        left: '50%',
-                                        top: '100%',
-                                        transform: 'translateX(-50%)',
-                                        width: '4px',
-                                        height: '80px',
-                                        background: getLineGradient(),
-                                        zIndex: 0,
-                                        borderRadius: '2px',
-                                        boxShadow: isCompleted || nextIsCompleted 
-                                            ? '0 0 8px rgba(81, 207, 102, 0.3)' 
-                                            : '0 0 8px rgba(34, 139, 230, 0.3)',
-                                    }}
-                                />
-                            )}
-
                             {/* Module Card */}
                             <Card
                                 shadow={isCompleted ? "xs" : "md"}
@@ -97,7 +107,7 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                 withBorder
                                 style={{
                                     position: 'relative',
-                                    zIndex: 1,
+                                    zIndex: 2,
                                     opacity: isCompleted ? 0.7 : 1,
                                     cursor: isCompleted ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.2s ease',
@@ -114,91 +124,112 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                     e.currentTarget.style.boxShadow = '';
                                 }}
                             >
-                                <Stack gap="md">
-                                    {/* Header */}
-                                    <Group justify="space-between" align="flex-start">
-                                        <Group gap="md">
-                                            <ThemeIcon
+                                <Box style={{ position: 'relative', zIndex: 1 }}>
+                                    <Stack gap="md">
+                                        {/* Header */}
+                                        <Group justify="space-between" align="flex-start" style={{ position: 'relative', zIndex: 1 }}>
+                                            <Group gap="md">
+                                                <ThemeIcon
+                                                    color={color}
+                                                    variant={isCompleted ? "light" : "filled"}
+                                                    size="xl"
+                                                    radius="md"
+                                                    style={{
+                                                        position: 'relative',
+                                                    }}
+                                                >
+                                                    {icon}
+                                                    {isCompleted && (
+                                                        <ThemeIcon
+                                                            size="sm"
+                                                            color="green"
+                                                            variant="filled"
+                                                            radius="xl"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '-4px',
+                                                                right: '-4px',
+                                                                border: '2px solid white',
+                                                            }}
+                                                        >
+                                                            <IconCheck size={12} />
+                                                        </ThemeIcon>
+                                                    )}
+                                                </ThemeIcon>
+                                                <div>
+                                                    <Text fw={600} size="lg" c={isCompleted ? "dimmed" : "dark"}>
+                                                        {toTitleCase(suggestion.metadata?.topic || "General Learning")}
+                                                    </Text>
+                                                    {isCompleted && (
+                                                        <Badge color="green" variant="light" size="sm" mt={4}>
+                                                            Completed
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </Group>
+                                            {!isCompleted && suggestion.confidence && (
+                                                <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
+                                                    {getConfidenceLabel(suggestion.confidence).label}
+                                                </Badge>
+                                            )}
+                                        </Group>
+
+                                        {/* Description */}
+                                        <Text size="sm" c={isCompleted ? "dimmed" : "dark"} style={{ lineHeight: 1.6 }}>
+                                            {suggestion.reason}
+                                        </Text>
+
+                                        {/* Action Button */}
+                                        {isCompleted ? (
+                                            <Button
+                                                variant="light"
+                                                color="gray"
+                                                fullWidth
+                                                disabled
+                                                leftSection={<IconCheck size={16} />}
+                                            >
+                                                Module Completed
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                variant="light"
                                                 color={color}
-                                                variant={isCompleted ? "light" : "filled"}
-                                                size="xl"
-                                                radius="md"
-                                                style={{
-                                                    position: 'relative',
+                                                fullWidth
+                                                rightSection={<IconArrowRight size={14} />}
+                                                onClick={() => {
+                                                    if (suggestion.moduleId) {
+                                                        router.push(`/modules/${suggestion.moduleId}`);
+                                                    }
                                                 }}
                                             >
-                                                {icon}
-                                                {isCompleted && (
-                                                    <ThemeIcon
-                                                        size="sm"
-                                                        color="green"
-                                                        variant="filled"
-                                                        radius="xl"
-                                                        style={{
-                                                            position: 'absolute',
-                                                            bottom: '-4px',
-                                                            right: '-4px',
-                                                            border: '2px solid white',
-                                                        }}
-                                                    >
-                                                        <IconCheck size={12} />
-                                                    </ThemeIcon>
-                                                )}
-                                            </ThemeIcon>
-                                            <div>
-                                                <Text fw={600} size="lg" c={isCompleted ? "dimmed" : "dark"}>
-                                                    {suggestion.metadata?.topic || "General Learning"}
-                                                </Text>
-                                                {isCompleted && (
-                                                    <Badge color="green" variant="light" size="sm" mt={4}>
-                                                        Completed
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </Group>
-                                        {!isCompleted && suggestion.confidence && (
-                                            <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
-                                                {getConfidenceLabel(suggestion.confidence).label}
-                                            </Badge>
+                                                Start Module
+                                            </Button>
                                         )}
-                                    </Group>
-
-                                    {/* Description */}
-                                    <Text size="sm" c={isCompleted ? "dimmed" : "dark"} style={{ lineHeight: 1.6 }}>
-                                        {suggestion.reason}
-                                    </Text>
-
-                                    {/* Action Button */}
-                                    {isCompleted ? (
-                                        <Button
-                                            variant="light"
-                                            color="gray"
-                                            fullWidth
-                                            disabled
-                                            leftSection={<IconCheck size={16} />}
-                                        >
-                                            Module Completed
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            variant="light"
-                                            color={color}
-                                            fullWidth
-                                            rightSection={<IconArrowRight size={14} />}
-                                            onClick={() => {
-                                                if (suggestion.moduleId) {
-                                                    router.push(`/modules/${suggestion.moduleId}`);
-                                                }
-                                            }}
-                                        >
-                                            Start Module
-                                        </Button>
-                                    )}
-                                </Stack>
+                                    </Stack>
+                                </Box>
                             </Card>
 
-                            {/* Spacing between modules */}
-                            {!isLast && <Box h={80} />}
+                            {/* Connecting line - positioned right after the card */}
+                            {!isLast && (
+                                <Box
+                                    style={{
+                                        position: 'relative',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: '4px',
+                                        height: '80px',
+                                        marginTop: 0,
+                                        marginBottom: 0,
+                                        background: getLineGradient(),
+                                        zIndex: 1,
+                                        borderRadius: '2px',
+                                        boxShadow: isCompleted || nextIsCompleted
+                                            ? '0 0 8px rgba(81, 207, 102, 0.3)'
+                                            : '0 0 8px rgba(34, 139, 230, 0.3)',
+                                        pointerEvents: 'none',
+                                    }}
+                                />
+                            )}
                         </Box>
                     );
                 })}
