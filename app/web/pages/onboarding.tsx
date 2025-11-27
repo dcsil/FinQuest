@@ -27,99 +27,53 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
 import { usersApi } from "@/lib/api";
-
-interface OnboardingData {
-    financialGoals: string;
-    investingExperience: number;
-    age: number;
-    annualIncome: string;
-    investmentAmount: string;
-    riskTolerance: string;
-}
-
-const financialGoalsOptions = [
-    "Saving for retirement",
-    "Buying a home",
-    "Starting a business",
-    "Paying off debt",
-    "General savings",
-];
-
-const incomeRanges = [
-    { value: "0-25k", label: "$0 - $25,000" },
-    { value: "25k-50k", label: "$25,000 - $50,000" },
-    { value: "50k-75k", label: "$50,000 - $75,000" },
-    { value: "75k-100k", label: "$75,000 - $100,000" },
-    { value: "100k-150k", label: "$100,000 - $150,000" },
-    { value: "150k+", label: "$150,000+" },
-];
-
-const investmentAmounts = [
-    { value: "0-1k", label: "$0 - $1,000" },
-    { value: "1k-5k", label: "$1,000 - $5,000" },
-    { value: "5k-10k", label: "$5,000 - $10,000" },
-    { value: "10k-25k", label: "$10,000 - $25,000" },
-    { value: "25k+", label: "$25,000+" },
-];
-
-const riskToleranceOptions = [
-    "Conservative",
-    "Moderately Conservative",
-    "Moderate",
-    "Moderately Aggressive",
-    "Aggressive",
-];
+import { useOnboarding } from "@/features/onboarding/hooks/useOnboarding";
+import {
+    financialGoalsOptions,
+    incomeRanges,
+    investmentAmounts,
+    riskToleranceOptions,
+    countries,
+} from "@/features/onboarding/constants";
+import { getExperienceLabel } from "@/features/onboarding/utils/validation";
 
 const Onboarding = () => {
-    const [currentStep, setCurrentStep] = useState(1);
-    const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
     const { colorScheme } = useMantineColorScheme();
-    const { user, signOut } = useAuth();
+    const { user, signOut, loading: authLoading } = useAuth();
     const router = useRouter();
+    const {
+        currentStep,
+        totalSteps,
+        data,
+        loading,
+        updateData,
+        handleNext,
+        handlePrevious,
+        canProceed,
+        isFirstStep,
+    } = useOnboarding();
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const [data, setData] = useState<OnboardingData>({
-        financialGoals: "Saving for retirement",
-        investingExperience: 1,
-        age: 25,
-        annualIncome: "",
-        investmentAmount: "",
-        riskTolerance: "Moderate",
-    });
+    useEffect(() => {
+        const checkOnboardingStatus = async () => {
+            if (!authLoading && user) {
+                try {
+                    const { completed } = await usersApi.getOnboardingStatus();
+                    if (completed) {
+                        router.push('/dashboard');
+                    }
+                } catch (error) {
+                    console.error("Error checking onboarding status:", error);
+                }
+            }
+        };
 
-    const totalSteps = 5;
-
-    const handleNext = () => {
-        if (currentStep < totalSteps) {
-            setCurrentStep(currentStep + 1);
-        } else {
-            handleComplete();
-        }
-    };
-
-    const handlePrevious = () => {
-        if (currentStep > 1) {
-            setCurrentStep(currentStep - 1);
-        }
-    };
-
-    const handleComplete = async () => {
-        setLoading(true);
-
-        try {
-            await usersApi.updateFinancialProfile(data);
-            setLoading(false);
-            router.push('/dashboard');
-        } catch (error) {
-            console.error("Onboarding failed:", error);
-            setLoading(false);
-            alert("Failed to save onboarding data. Please try again.");
-        }
-    };
+        checkOnboardingStatus();
+    }, [user, authLoading, router]);
 
     const renderStep = () => {
         switch (currentStep) {
@@ -131,7 +85,7 @@ const Onboarding = () => {
                         </Title>
                         <Radio.Group
                             value={data.financialGoals}
-                            onChange={(value) => setData({ ...data, financialGoals: value })}
+                            onChange={(value) => updateData({ financialGoals: value })}
                         >
                             <Stack gap="sm">
                                 {financialGoalsOptions.map((goal) => (
@@ -154,7 +108,7 @@ const Onboarding = () => {
                         <Stack gap="md">
                             <Slider
                                 value={data.investingExperience}
-                                onChange={(value) => setData({ ...data, investingExperience: value })}
+                                onChange={(value) => updateData({ investingExperience: value })}
                                 min={0}
                                 max={4}
                                 step={1}
@@ -183,7 +137,7 @@ const Onboarding = () => {
                             label="What's your age?"
                             placeholder="Enter your age"
                             value={data.age}
-                            onChange={(value) => setData({ ...data, age: Number(value) || 25 })}
+                            onChange={(value) => updateData({ age: Number(value) || 25 })}
                             min={18}
                             max={100}
                             size="md"
@@ -194,7 +148,17 @@ const Onboarding = () => {
                             placeholder="Select your income range"
                             data={incomeRanges}
                             value={data.annualIncome}
-                            onChange={(value) => setData({ ...data, annualIncome: value || "" })}
+                            onChange={(value) => updateData({ annualIncome: value || "" })}
+                            size="md"
+                            searchable
+                        />
+
+                        <Select
+                            label="Which country are you based in?"
+                            placeholder="Select your country"
+                            data={countries}
+                            value={data.country}
+                            onChange={(value) => updateData({ country: value || "US" })}
                             size="md"
                             searchable
                         />
@@ -213,7 +177,7 @@ const Onboarding = () => {
                             placeholder="Select investment amount"
                             data={investmentAmounts}
                             value={data.investmentAmount}
-                            onChange={(value) => setData({ ...data, investmentAmount: value || "" })}
+                            onChange={(value) => updateData({ investmentAmount: value || "" })}
                             size="md"
                             searchable
                         />
@@ -223,7 +187,7 @@ const Onboarding = () => {
                             placeholder="Select your risk tolerance"
                             data={riskToleranceOptions}
                             value={data.riskTolerance}
-                            onChange={(value) => setData({ ...data, riskTolerance: value || "Moderate" })}
+                            onChange={(value) => updateData({ riskTolerance: value || "Moderate" })}
                             size="md"
                             searchable
                         />
@@ -244,8 +208,7 @@ const Onboarding = () => {
                         <Radio.Group
                             value={data.investingExperience > 1 ? "yes" : "no"}
                             onChange={(value) =>
-                                setData({
-                                    ...data,
+                                updateData({
                                     investingExperience: value === "yes" ? 3 : 0
                                 })
                             }
@@ -257,10 +220,7 @@ const Onboarding = () => {
                         </Radio.Group>
 
                         <Text size="sm" ta="center" c="dimmed" mt="md">
-                            Based on your experience level: {data.investingExperience === 0 ? "Beginner" :
-                                data.investingExperience === 1 ? "Beginner" :
-                                    data.investingExperience === 2 ? "Intermediate" :
-                                        data.investingExperience === 3 ? "Advanced" : "Expert"}
+                            Based on your experience level: {getExperienceLabel(data.investingExperience)}
                         </Text>
                     </Stack>
                 );
@@ -275,16 +235,12 @@ const Onboarding = () => {
                         <Paper p="md" withBorder shadow="xs">
                             <Stack gap="sm">
                                 <Text><strong>Financial Goal:</strong> {data.financialGoals}</Text>
-                                <Text><strong>Investment Experience:</strong> {
-                                    data.investingExperience === 0 ? "Not at all" :
-                                        data.investingExperience === 1 ? "Beginner" :
-                                            data.investingExperience === 2 ? "Intermediate" :
-                                                data.investingExperience === 3 ? "Advanced" : "Expert"
-                                }</Text>
+                                <Text><strong>Investment Experience:</strong> {getExperienceLabel(data.investingExperience)}</Text>
                                 <Text><strong>Age:</strong> {data.age}</Text>
                                 <Text><strong>Annual Income:</strong> {data.annualIncome ? incomeRanges.find(r => r.value === data.annualIncome)?.label : "Not specified"}</Text>
                                 <Text><strong>Initial Investment:</strong> {data.investmentAmount ? investmentAmounts.find(r => r.value === data.investmentAmount)?.label : "Not specified"}</Text>
                                 <Text><strong>Risk Tolerance:</strong> {data.riskTolerance}</Text>
+                                <Text><strong>Country:</strong> {data.country ? countries.find(c => c.value === data.country)?.label : "Not specified"}</Text>
                             </Stack>
                         </Paper>
 
@@ -409,7 +365,7 @@ const Onboarding = () => {
                                     variant="outline"
                                     leftSection={<IconArrowLeft size={16} />}
                                     onClick={handlePrevious}
-                                    disabled={currentStep === 1}
+                                    disabled={isFirstStep}
                                 >
                                     Previous
                                 </Button>
@@ -418,11 +374,7 @@ const Onboarding = () => {
                                     rightSection={currentStep < totalSteps ? <IconArrowRight size={16} /> : null}
                                     onClick={handleNext}
                                     loading={loading && currentStep === totalSteps}
-                                    disabled={
-                                        (currentStep === 1 && !data.financialGoals) ||
-                                        (currentStep === 2 && (!data.age || !data.annualIncome)) ||
-                                        (currentStep === 3 && (!data.investmentAmount || !data.riskTolerance))
-                                    }
+                                    disabled={!canProceed}
                                 >
                                     {currentStep < totalSteps ? "Next" : "Complete"}
                                 </Button>

@@ -55,8 +55,11 @@ class SuggestionGenerator:
             profile_context += f"- Experience Level: {answers.get('investingExperience', 'Not specified')}\n"
             profile_context += f"- Risk Tolerance: {answers.get('riskTolerance', 'Not specified')}\n"
             profile_context += f"- Investment Horizon: {answers.get('investmentHorizon', 'Not specified')}\n"
+            country = answers.get('country', 'US')
+            profile_context += f"- Country: {country}\n"
         else:
             profile_context += "No specific profile data available.\n"
+            country = 'US'  # Default to US if no profile data
 
         portfolio_context = "Portfolio Context:\n"
         if user.portfolio:
@@ -100,13 +103,29 @@ class SuggestionGenerator:
             f"Avoid these topics: {', '.join(existing_topics) if existing_topics else 'None'}"
         )
 
+        # Get country for context
+        country = onboarding.answers.get('country', 'US') if onboarding else 'US'
+        country_name = {
+            'US': 'United States', 'CA': 'Canada', 'GB': 'United Kingdom', 'AU': 'Australia',
+            'DE': 'Germany', 'FR': 'France', 'IT': 'Italy', 'ES': 'Spain', 'NL': 'Netherlands',
+            'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria', 'SE': 'Sweden', 'NO': 'Norway',
+            'DK': 'Denmark', 'FI': 'Finland', 'IE': 'Ireland', 'PT': 'Portugal', 'PL': 'Poland',
+            'CZ': 'Czech Republic', 'GR': 'Greece', 'JP': 'Japan', 'CN': 'China', 'IN': 'India',
+            'SG': 'Singapore', 'HK': 'Hong Kong', 'KR': 'South Korea', 'TW': 'Taiwan', 'NZ': 'New Zealand',
+            'BR': 'Brazil', 'MX': 'Mexico', 'AR': 'Argentina', 'ZA': 'South Africa', 'AE': 'United Arab Emirates',
+            'IL': 'Israel', 'TR': 'Turkey', 'RU': 'Russia'
+        }.get(country, country)
+
         user_prompt = (
             f"Analyze this user:\n\n"
             f"{profile_context}\n"
             f"{portfolio_context}\n\n"
+            f"IMPORTANT: The user is based in {country_name} ({country}). "
+            "Tailor all suggestions to their country's financial regulations, tax systems, investment options, "
+            "and market practices. Use country-specific examples, regulations, and financial products where relevant.\n\n"
             "Generate suggestions. If the user is a beginner or has no portfolio, focus on foundational concepts "
-            "relevant to their goals. If they have a portfolio, look for concentration risk, diversification issues, "
-            "or alignment with their risk tolerance."
+            "relevant to their goals and country. If they have a portfolio, look for concentration risk, diversification issues, "
+            "or alignment with their risk tolerance, considering their country's market context."
         )
 
         # Call LLM

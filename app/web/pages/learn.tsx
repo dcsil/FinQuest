@@ -5,27 +5,65 @@ import {
     Title,
     Text,
     Stack,
-    SimpleGrid,
     Card,
-    Badge,
-    Button,
-    Group,
-    ThemeIcon,
-    Loader,
-    Center,
     AppShell,
+    Skeleton,
+    Box,
 } from "@mantine/core";
-import { IconBook, IconChartBar, IconAlertTriangle, IconArrowRight } from "@tabler/icons-react";
 import { AppNav } from "@/components/AppNav";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usersApi } from "@/lib/api";
-import { useRouter } from "next/router";
 import type { Suggestion } from "@/types/learning";
+import { LearningPathway } from "@/components/LearningPathway";
+
+/**
+ * Learning page skeleton component for loading state
+ */
+const LearnSkeleton = () => (
+    <Stack gap="xl">
+        <div>
+            <Skeleton height={36} width={300} mb="xs" />
+            <Skeleton height={20} width={500} />
+        </div>
+
+        <Box style={{ position: 'relative', padding: '2rem 0' }}>
+            <Stack gap={0} align="center">
+                {[1, 2, 3, 4, 5].map((i, index) => (
+                    <Box key={i} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+                        {index < 4 && (
+                            <Box
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '100%',
+                                    transform: 'translateX(-50%)',
+                                    width: '3px',
+                                    height: '80px',
+                                    background: 'linear-gradient(to bottom, #dee2e6, #e9ecef)',
+                                    zIndex: 0,
+                                    borderRadius: '2px',
+                                }}
+                            />
+                        )}
+                        <Card shadow="sm" padding="lg" radius="md" withBorder style={{ position: 'relative', zIndex: 1 }}>
+                            <Stack gap="md">
+                                <Skeleton height={24} width="60%" />
+                                <Skeleton height={16} width="100%" />
+                                <Skeleton height={16} width="90%" />
+                                <Skeleton height={36} width="100%" radius="md" />
+                            </Stack>
+                        </Card>
+                        {index < 4 && <Box h={80} />}
+                    </Box>
+                ))}
+            </Stack>
+        </Box>
+    </Stack>
+);
 
 const Learn = () => {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
 
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -42,35 +80,6 @@ const Learn = () => {
         fetchSuggestions();
     }, []);
 
-    const getIcon = (type: string | undefined) => {
-        switch (type) {
-            case "investment":
-                return <IconChartBar size={24} />;
-            case "warning":
-                return <IconAlertTriangle size={24} />;
-            default:
-                return <IconBook size={24} />;
-        }
-    };
-
-    const getColor = (type: string | undefined) => {
-        switch (type) {
-            case "investment":
-                return "blue";
-            case "warning":
-                return "orange";
-            default:
-                return "teal";
-        }
-    };
-
-    const getConfidenceLabel = (confidence: number | null) => {
-        if (!confidence) return { label: 'Low Match', color: 'gray' };
-        if (confidence >= 0.8) return { label: 'High Match', color: 'green' };
-        if (confidence >= 0.5) return { label: 'Medium Match', color: 'yellow' };
-        return { label: 'Low Match', color: 'gray' };
-    };
-
     return (
         <ProtectedRoute>
             <Head>
@@ -79,7 +88,7 @@ const Learn = () => {
             <AppShell header={{ height: 70 }}>
                 <AppNav />
                 <AppShell.Main>
-                    <Container size="xl" py="xl">
+                    <Container size="xl" pt="xl">
                         <Stack gap="xl">
                             <div>
                                 <Title order={1}>Your Learning Path</Title>
@@ -89,9 +98,7 @@ const Learn = () => {
                             </div>
 
                             {loading ? (
-                                <Center h={200}>
-                                    <Loader size="lg" />
-                                </Center>
+                                <LearnSkeleton />
                             ) : suggestions.length === 0 ? (
                                 <Card withBorder padding="xl" radius="md">
                                     <Text ta="center" size="lg">
@@ -99,56 +106,7 @@ const Learn = () => {
                                     </Text>
                                 </Card>
                             ) : (
-                                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-                                    {suggestions.map((suggestion) => (
-                                        <Card
-                                            key={suggestion.id}
-                                            shadow="sm"
-                                            padding="lg"
-                                            radius="md"
-                                            withBorder
-                                            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-                                        >
-                                            <Card.Section withBorder inheritPadding py="xs">
-                                                <Group justify="space-between">
-                                                    <Group gap="xs">
-                                                        <ThemeIcon
-                                                            color={getColor(suggestion.metadata?.type)}
-                                                            variant="light"
-                                                            size="lg"
-                                                        >
-                                                            {getIcon(suggestion.metadata?.type)}
-                                                        </ThemeIcon>
-                                                        <Text fw={500} tt="capitalize">
-                                                            {suggestion.metadata?.topic || "General"}
-                                                        </Text>
-                                                    </Group>
-                                                    {suggestion.confidence && (
-                                                        <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
-                                                            {getConfidenceLabel(suggestion.confidence).label}
-                                                        </Badge>
-                                                    )}
-                                                </Group>
-                                            </Card.Section>
-
-                                            <Stack mt="md" mb="md" style={{ flex: 1 }}>
-                                                <Text size="sm" c="dimmed" style={{ flex: 1 }}>
-                                                    {suggestion.reason}
-                                                </Text>
-                                            </Stack>
-
-                                            <Button
-                                                variant="light"
-                                                color="blue"
-                                                fullWidth
-                                                rightSection={<IconArrowRight size={14} />}
-                                                onClick={() => router.push(`/modules/${suggestion.moduleId}`)}
-                                            >
-                                                Start Module
-                                            </Button>
-                                        </Card>
-                                    ))}
-                                </SimpleGrid>
+                                <LearningPathway suggestions={suggestions} />
                             )}
                         </Stack>
                     </Container>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Paper,
     Title,
@@ -11,6 +11,7 @@ import {
     Progress,
     Box,
     ThemeIcon,
+    useMantineColorScheme,
 } from "@mantine/core";
 import { IconCheck, IconX, IconBulb } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
@@ -39,12 +40,20 @@ export interface ModuleViewerProps {
 }
 
 export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
+    const { colorScheme } = useMantineColorScheme();
+    const isDark = colorScheme === "dark";
     const [activeTab, setActiveTab] = useState<"learn" | "quiz">("learn");
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
     const [quizCompleted, setQuizCompleted] = useState(false);
+
+    // Reset selected answer when question changes
+    useEffect(() => {
+        setSelectedAnswer(null);
+        setShowResult(false);
+    }, [currentQuestion]);
 
     const handleAnswerSubmit = () => {
         if (!selectedAnswer) return;
@@ -62,10 +71,12 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
     };
 
     const handleNextQuestion = () => {
+        // Clear selected answer first
+        setSelectedAnswer(null);
+        setShowResult(false);
+
         if (currentQuestion < content.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
-            setSelectedAnswer(null);
-            setShowResult(false);
         } else {
             setQuizCompleted(true);
             if (onComplete) {
@@ -128,9 +139,9 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                     >
                         {passed ? <IconCheck size={40} /> : <IconX size={40} />}
                     </ThemeIcon>
-                    
+
                     <Title order={2}>{passed ? "Module Completed!" : "Keep Trying!"}</Title>
-                    
+
                     <Text size="xl">
                         You scored {score} out of {content.questions.length} ({percentage}%)
                     </Text>
@@ -143,9 +154,9 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
 
                     <Group>
                         {!passed && (
-                            <Button 
-                                size="lg" 
-                                variant="outline" 
+                            <Button
+                                size="lg"
+                                variant="outline"
                                 onClick={() => {
                                     setScore(0);
                                     setCurrentQuestion(0);
@@ -182,32 +193,98 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                     <Text size="xl" fw={500}>{question.question}</Text>
 
                     <Radio.Group
+                        key={`question-${currentQuestion}`}
                         value={selectedAnswer || ""}
                         onChange={setSelectedAnswer}
                     >
                         <Stack gap="md">
                             {question.choices.map((choice, index) => (
-                                <Radio
+                                <Box
                                     key={index}
-                                    value={choice.text}
-                                    label={<Text size="lg">{choice.text}</Text>}
-                                    disabled={showResult}
-                                    styles={{
-                                        root: {
-                                            padding: '16px',
-                                            border: '1px solid',
-                                            borderColor: showResult && choice.isCorrect 
-                                                ? 'var(--mantine-color-green-filled)' 
-                                                : showResult && selectedAnswer === choice.text && !choice.isCorrect
-                                                    ? 'var(--mantine-color-red-filled)'
-                                                    : 'var(--mantine-color-gray-3)',
-                                            borderRadius: '8px',
-                                            backgroundColor: showResult && choice.isCorrect 
-                                                ? 'var(--mantine-color-green-light)'
-                                                : 'transparent'
+                                    onClick={() => {
+                                        if (!showResult) {
+                                            setSelectedAnswer(choice.text);
                                         }
                                     }}
-                                />
+                                    style={{
+                                        padding: '16px',
+                                        border: '1px solid',
+                                        borderColor: showResult && choice.isCorrect
+                                            ? 'var(--mantine-color-green-filled)'
+                                            : showResult && selectedAnswer === choice.text && !choice.isCorrect
+                                                ? 'var(--mantine-color-red-filled)'
+                                                : isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)',
+                                        borderRadius: '8px',
+                                        backgroundColor: showResult && choice.isCorrect
+                                            ? (isDark ? 'transparent' : 'var(--mantine-color-green-light)')
+                                            : showResult && selectedAnswer === choice.text && !choice.isCorrect
+                                                ? (isDark ? 'transparent' : 'var(--mantine-color-red-light)')
+                                                : selectedAnswer === choice.text && !showResult
+                                                    ? (isDark ? 'transparent' : 'var(--mantine-color-blue-light)')
+                                                    : 'transparent',
+                                        cursor: showResult ? 'default' : 'pointer',
+                                        transition: 'background-color 0.2s, border-color 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!showResult) {
+                                            // Only change background in light mode
+                                            if (!isDark) {
+                                                if (selectedAnswer === choice.text) {
+                                                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-light)';
+                                                } else {
+                                                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-0)';
+                                                }
+                                            }
+                                            // Always change border on hover
+                                            e.currentTarget.style.borderColor = isDark
+                                                ? 'var(--mantine-color-blue-6)'
+                                                : 'var(--mantine-color-blue-5)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!showResult) {
+                                            // Reset background (only relevant in light mode)
+                                            if (!isDark) {
+                                                e.currentTarget.style.backgroundColor = selectedAnswer === choice.text
+                                                    ? 'var(--mantine-color-blue-light)'
+                                                    : 'transparent';
+                                            }
+                                            // Reset border
+                                            e.currentTarget.style.borderColor = showResult && choice.isCorrect
+                                                ? 'var(--mantine-color-green-filled)'
+                                                : showResult && selectedAnswer === choice.text && !choice.isCorrect
+                                                    ? 'var(--mantine-color-red-filled)'
+                                                    : (isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)');
+                                        }
+                                    }}
+                                >
+                                    <Radio
+                                        value={choice.text}
+                                        label={<Text size="lg">{choice.text}</Text>}
+                                        disabled={showResult}
+                                        styles={{
+                                            root: {
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                width: '100%',
+                                                margin: 0,
+                                            },
+                                            radio: {
+                                                marginTop: 0,
+                                                cursor: showResult ? 'default' : 'pointer',
+                                            },
+                                            label: {
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                paddingLeft: '8px',
+                                                width: '100%',
+                                                cursor: showResult ? 'default' : 'pointer',
+                                                flex: 1,
+                                                margin: 0,
+                                            }
+                                        }}
+                                    />
+                                </Box>
                             ))}
                         </Stack>
                     </Radio.Group>
@@ -219,8 +296,8 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                             title={question.choices.find(c => c.text === selectedAnswer)?.isCorrect ? "Correct!" : "Incorrect"}
                             icon={question.choices.find(c => c.text === selectedAnswer)?.isCorrect ? <IconCheck /> : <IconX />}
                         >
-                            {question.explanation || (question.choices.find(c => c.text === selectedAnswer)?.isCorrect 
-                                ? "Great job!" 
+                            {question.explanation || (question.choices.find(c => c.text === selectedAnswer)?.isCorrect
+                                ? "Great job!"
                                 : "Review the material and try again.")}
                         </Alert>
                     )}
@@ -230,6 +307,16 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                             size="lg"
                             onClick={handleAnswerSubmit}
                             disabled={!selectedAnswer}
+                            styles={isDark ? {
+                                root: {
+                                    '&[disabled]': {
+                                        background: 'var(--mantine-color-dark-3) !important',
+                                        border: '1px solid var(--mantine-color-dark-4) !important',
+                                        color: 'var(--mantine-color-dark-2) !important',
+                                        opacity: '1 !important',
+                                    },
+                                },
+                            } : undefined}
                         >
                             Check Answer
                         </Button>

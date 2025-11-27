@@ -9,21 +9,50 @@ import {
     Stack,
     Paper,
     AppShell,
+    Skeleton,
+    useMantineColorScheme,
 } from '@mantine/core';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
 import { ValueChart, type TimeRange } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
+import { GamificationEngagement } from '@/components/GamificationEngagement';
 import { portfolioApi, usersApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
 import type { Suggestion } from '@/types/learning';
 import { format, subDays, startOfYear } from 'date-fns';
 
+/**
+ * Dashboard skeleton component for initial loading state
+ */
+const DashboardSkeleton = () => (
+    <Stack gap="xl">
+        {/* Header */}
+        <Skeleton height={36} width={200} />
+
+        {/* My Investments Section */}
+        <div>
+            <Skeleton height={28} width={180} mb="md" />
+            <Paper shadow="sm" p="lg" radius="md" withBorder>
+                <Skeleton height={400} radius="md" />
+            </Paper>
+        </div>
+
+        {/* AI Suggestions Widget Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Skeleton height={28} width={200} mb="md" />
+            <Skeleton height={100} radius="md" />
+        </Paper>
+    </Stack>
+);
+
 const DashboardPage = () => {
+    const { colorScheme } = useMantineColorScheme();
+    const isDark = colorScheme === 'dark';
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [timeRange, setTimeRange] = useState<TimeRange>('1m');
     const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
@@ -159,6 +188,21 @@ const DashboardPage = () => {
         return `${sign}${numValue.toFixed(2)}%`;
     };
 
+    if (loading && !portfolio) {
+        return (
+            <ProtectedRoute>
+                <AppShell header={{ height: 70 }}>
+                    <AppNav />
+                    <AppShell.Main>
+                        <Container size="xl" py="xl">
+                            <DashboardSkeleton />
+                        </Container>
+                    </AppShell.Main>
+                </AppShell>
+            </ProtectedRoute>
+        );
+    }
+
     return (
         <ProtectedRoute>
             <Head>
@@ -172,6 +216,12 @@ const DashboardPage = () => {
                             {/* Header */}
                             <Title order={1}>Dashboard</Title>
 
+                            {/* Gamification Engagement */}
+                            <GamificationEngagement 
+                                suggestions={suggestions} 
+                                loadingSuggestions={loadingSuggestions}
+                            />
+
                             {/* My Investments Section */}
                             <div>
                                 <Title order={2} mb="md">My investments</Title>
@@ -183,12 +233,18 @@ const DashboardPage = () => {
                                                 top: 20,
                                                 left: 20,
                                                 zIndex: 10,
-                                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                                backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                                                 padding: '12px 16px',
                                                 borderRadius: '8px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                                                boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
                                             }}>
-                                                <div style={{ fontSize: '24px', fontWeight: 700 }}>
+                                                <div style={{ 
+                                                    fontSize: '24px', 
+                                                    fontWeight: 700,
+                                                    color: isDark ? '#fff' : '#111827'
+                                                }}>
                                                     {formatCurrency(totals.totalValue, baseCurrency)}
                                                 </div>
                                                 <div style={{

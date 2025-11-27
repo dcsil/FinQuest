@@ -6,6 +6,7 @@ import { AppNav } from '../../components/AppNav';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { ModuleViewer, ModuleContent } from '../../components/ModuleViewer';
 import { modulesApi } from '../../lib/api';
+import { useGamificationEvents } from '../../hooks/useGamificationEvents';
 
 export default function ModulePage() {
     const router = useRouter();
@@ -13,6 +14,8 @@ export default function ModulePage() {
     const [module, setModule] = useState<ModuleContent | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { triggerModuleCompleted, triggerQuizCompleted } = useGamificationEvents();
+    const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!id) return;
@@ -41,9 +44,20 @@ export default function ModulePage() {
         
         const percentage = (score / total) * 100;
         const passed = percentage >= 70;
+        const moduleId = id as string;
 
         try {
-            await modulesApi.submitAttempt(id as string, score, total, passed);
+            await modulesApi.submitAttempt(moduleId, score, total, passed);
+            
+            // Only trigger gamification events if quiz was passed
+            if (passed) {
+                // Trigger gamification events
+                const isFirstTime = !completedModules.has(moduleId);
+                await triggerModuleCompleted(moduleId, isFirstTime);
+                setCompletedModules((prev) => new Set(prev).add(moduleId));
+                
+                await triggerQuizCompleted(percentage);
+            }
         } catch (err) {
             console.error("Failed to submit attempt:", err);
         }

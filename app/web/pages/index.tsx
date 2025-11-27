@@ -18,6 +18,7 @@ import { IconSun, IconMoon } from "@tabler/icons-react";
 import FinQuestLogo from "../assets/FinQuestLogo.png";
 import GradientBackground from "@/components/GradientBackground";
 import { useAuth } from "@/contexts/AuthContext";
+import { usersApi } from "@/lib/api";
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -45,10 +46,25 @@ const Home = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // If user is authenticated, redirect to onboarding/dashboard
-        if (!loading && user) {
-            router.push('/onboarding');
-        }
+        const checkOnboardingAndRedirect = async () => {
+            // If user is authenticated, check onboarding status and redirect accordingly
+            if (!loading && user) {
+                try {
+                    const { completed } = await usersApi.getOnboardingStatus();
+                    if (completed) {
+                        router.push('/dashboard');
+                    } else {
+                        router.push('/onboarding');
+                    }
+                } catch (error) {
+                    // If there's an error checking onboarding status, default to onboarding
+                    console.error("Error checking onboarding status:", error);
+                    router.push('/onboarding');
+                }
+            }
+        };
+
+        checkOnboardingAndRedirect();
     }, [user, loading, router]);
 
     return (

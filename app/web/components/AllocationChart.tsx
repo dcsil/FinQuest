@@ -60,13 +60,30 @@ export const AllocationChart = ({ data, title, colors = DEFAULT_COLORS }: Alloca
                         ))}
                     </Pie>
                     <Tooltip 
-                        formatter={(value: number) => `${value.toFixed(2)}%`}
-                        contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                        content={({ active, payload }) => {
+                            if (active && payload && payload.length > 0) {
+                                const entry = payload[0];
+                                const name = typeof entry.name === 'string' ? entry.name : String(entry.name || '');
+                                const uppercaseName = name.toUpperCase();
+                                const value = typeof entry.value === 'number' ? entry.value : Number(entry.value || 0);
+                                return (
+                                    <div style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                                        border: '1px solid #e5e7eb',
+                                        borderRadius: '8px',
+                                        padding: '8px 12px',
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                                    }}>
+                                        <div style={{ fontWeight: 700, marginBottom: '4px' }}>
+                                            {uppercaseName}
+                                        </div>
+                                        <div style={{ fontWeight: 500 }}>
+                                            {value.toFixed(2)}%
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
                         }}
                     />
                 </PieChart>
@@ -93,7 +110,14 @@ export const AllocationChart = ({ data, title, colors = DEFAULT_COLORS }: Alloca
                                     flexShrink: 0
                                 }} 
                             />
-                            <span style={{ textAlign: 'left', fontSize: '14px' }}>{entry.name}</span>
+                            <span style={{ 
+                                textAlign: 'left', 
+                                fontSize: '14px', 
+                                fontWeight: 700,
+                                textTransform: 'uppercase'
+                            }}>
+                                {entry.name}
+                            </span>
                         </div>
                         <span style={{ textAlign: 'right', fontSize: '14px', fontWeight: 500, minWidth: '50px' }}>
                             {entry.value.toFixed(0)}%

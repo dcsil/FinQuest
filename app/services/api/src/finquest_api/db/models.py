@@ -492,3 +492,56 @@ class DailyLearningLog(Base):
     created_at: Mapped[datetime] = ts_created()
     updated_at: Mapped[datetime] = ts_updated()
 
+
+class UserGamificationStats(Base):
+    __tablename__ = "user_gamification_stats"
+    __table_args__ = (UniqueConstraint("user_id", name="uq_gamification_stats_user"),)
+
+    id: Mapped[UUID] = uuid_pk()
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+    total_xp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    level: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    current_streak: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_streak_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    total_modules_completed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_quizzes_completed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_portfolio_positions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = ts_created()
+    updated_at: Mapped[datetime] = ts_updated()
+
+
+class BadgeDefinition(Base):
+    __tablename__ = "badge_definitions"
+    __table_args__ = (UniqueConstraint("code", name="uq_badge_code"),)
+
+    id: Mapped[UUID] = uuid_pk()
+    code: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String(32), nullable=False)  # 'learning', 'streak', 'portfolio'
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = ts_created()
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+    __table_args__ = (UniqueConstraint("user_id", "badge_id", name="uq_user_badge"),)
+
+    id: Mapped[UUID] = uuid_pk()
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    badge_id: Mapped[UUID] = mapped_column(
+        ForeignKey("badge_definitions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    earned_at: Mapped[datetime] = ts_created()
+

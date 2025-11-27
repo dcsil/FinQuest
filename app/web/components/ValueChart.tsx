@@ -281,23 +281,30 @@ export const ValueChart = ({
                             width={70}
                         />
                         <Tooltip
-                            formatter={(value: number) => [`${baseCurrency} ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, '']}
-                            labelFormatter={(label, payload) => {
-                                if (payload && payload[0]) {
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length > 0) {
                                     const tooltipFormat = getTooltipFormat(granularity);
-                                    return format(new Date(payload[0].payload.fullDate), tooltipFormat);
+                                    const date = payload[0].payload.fullDate;
+                                    const value = payload[0].value as number;
+                                    return (
+                                        <div style={{
+                                            backgroundColor: isDark ? 'rgba(37, 38, 43, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                                            border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
+                                            borderRadius: '8px',
+                                            padding: '10px 14px',
+                                            boxShadow: isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.08)',
+                                        }}>
+                                            <div style={{ fontWeight: 600, marginBottom: '6px', color: isDark ? '#fff' : '#111827' }}>
+                                                {format(new Date(date), tooltipFormat)}
+                                            </div>
+                                            <div style={{ color: '#2563eb', fontWeight: 500 }}>
+                                                {formatCurrency(value, baseCurrency)}
+                                            </div>
+                                        </div>
+                                    );
                                 }
-                                return label;
+                                return null;
                             }}
-                            contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '8px',
-                                padding: '10px 14px',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                            }}
-                            labelStyle={{ fontWeight: 600, marginBottom: '6px', color: '#111827' }}
-                            itemStyle={{ color: '#2563eb', fontWeight: 500 }}
                         />
                         <Line
                             type="monotone"

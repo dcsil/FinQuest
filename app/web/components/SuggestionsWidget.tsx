@@ -48,12 +48,15 @@ export const SuggestionsWidget = ({ suggestions, loading }: SuggestionsWidgetPro
         );
     }
 
-    if (suggestions.length === 0) {
+    // Filter out completed suggestions - only show incomplete ones for this widget
+    const incompleteSuggestions = suggestions.filter(s => s.status !== 'completed');
+
+    if (incompleteSuggestions.length === 0) {
         return null;
     }
 
-    // Show only top 3 suggestions
-    const topSuggestions = suggestions.slice(0, 3);
+    // Show only top 3 incomplete suggestions
+    const topSuggestions = incompleteSuggestions.slice(0, 3);
 
     return (
         <Stack gap="md">

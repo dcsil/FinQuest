@@ -96,6 +96,7 @@ class UserProfile(BaseModel):
     annualIncome: Optional[str] = None
     investmentAmount: Optional[str] = None
     riskTolerance: Optional[str] = None
+    country: Optional[str] = Field(None, description="ISO 3166-1 alpha-2 country code (e.g., 'US', 'CA', 'GB')")
 
 
 class UpdateProfileRequest(UserProfile):

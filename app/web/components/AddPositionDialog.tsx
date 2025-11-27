@@ -14,6 +14,7 @@ import {
 import { IconAlertCircle } from '@tabler/icons-react';
 import { portfolioApi } from '@/lib/api';
 import type { PostPositionRequest } from '@/types/portfolio';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 interface AddPositionDialogProps {
     opened: boolean;
@@ -28,6 +29,7 @@ export const AddPositionDialog = ({ opened, onClose, onSuccess }: AddPositionDia
     const [executedAt, setExecutedAt] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { triggerPortfolioPositionAdded } = useGamificationEvents();
 
     const handleSubmit = async () => {
         // Validation
@@ -56,6 +58,9 @@ export const AddPositionDialog = ({ opened, onClose, onSuccess }: AddPositionDia
             };
 
             await portfolioApi.addPosition(request);
+
+            // Trigger gamification event (position_id is optional)
+            await triggerPortfolioPositionAdded();
 
             // Reset form
             setSymbol('');

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..auth_utils import get_current_user
 from ..db.models import User, OnboardingResponse, Suggestion
 from ..db.session import get_session, SessionLocal, get_engine
-from ..schemas import UpdateProfileRequest, SuggestionResponse
+from ..schemas import UpdateProfileRequest, SuggestionResponse, UserProfile
 from ..services.llm.service import LLMService
 from ..services.module_generator import ModuleGenerator
 from ..services.suggestion_generator import SuggestionGenerator
@@ -35,6 +35,58 @@ async def generate_suggestions_task(
         print(f"Error generating suggestions in background: {e}")
     finally:
         db.close()
+
+@router.get("/onboarding-status")
+async def get_onboarding_status(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
+):
+    """
+    Check if user has completed onboarding.
+    Returns True if user has an onboarding response, False otherwise.
+    """
+    try:
+        onboarding_response = db.query(OnboardingResponse).filter(
+            OnboardingResponse.user_id == user.id
+        ).order_by(OnboardingResponse.submitted_at.desc()).first()
+        
+        return {
+            "completed": onboarding_response is not None
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to check onboarding status: {str(e)}"
+        )
+
+
+@router.get("/financial-profile", response_model=UserProfile)
+async def get_financial_profile(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
+):
+    """
+    Get user's financial profile (onboarding data).
+    Returns the most recent onboarding response data.
+    """
+    try:
+        onboarding_response = db.query(OnboardingResponse).filter(
+            OnboardingResponse.user_id == user.id
+        ).order_by(OnboardingResponse.submitted_at.desc()).first()
+        
+        if not onboarding_response or not onboarding_response.answers:
+            # Return empty profile if no onboarding data exists
+            return UserProfile()
+        
+        # Convert answers dict to UserProfile
+        return UserProfile(**onboarding_response.answers)
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get financial profile: {str(e)}"
+        )
+
 
 @router.post("/financial-profile", status_code=status.HTTP_201_CREATED)
 async def update_financial_profile(
@@ -89,11 +141,12 @@ async def get_suggestions(
     If no suggestions exist, triggers generation in background and returns empty list.
     """
     try:
-        # Fetch existing suggestions
+        # Fetch existing suggestions (including completed ones to show in pathway)
+        # Order by creation time to preserve the natural sequence in the pathway
         suggestions = db.query(Suggestion).filter(
             Suggestion.user_id == user.id,
-            Suggestion.status == "shown"
-        ).order_by(Suggestion.confidence.desc()).all()
+            Suggestion.status.in_(["shown", "completed"])
+        ).order_by(Suggestion.created_at.asc()).all()
         
         # If no suggestions, generate them in background
         if not suggestions:

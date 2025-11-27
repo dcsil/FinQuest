@@ -1,7 +1,7 @@
 /**
  * Portfolio Page
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import {
     Container,
@@ -15,7 +15,6 @@ import {
     Badge,
     Grid,
     Paper,
-    Loader,
     Alert,
     AppShell,
     Skeleton,
@@ -25,12 +24,15 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
 import { AddPositionDialog } from '@/components/AddPositionDialog';
 import { AllocationChart } from '@/components/AllocationChart';
-import { ValueChart, type TimeRange } from '@/components/ValueChart';
+import { ValueChart } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
-import { portfolioApi, usersApi } from '@/lib/api';
-import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
+import { usersApi } from '@/lib/api';
 import type { Suggestion } from '@/types/learning';
-import { format, subDays, startOfYear } from 'date-fns';
+import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
+import { useSnapshots } from '@/features/portfolio/hooks/useSnapshots';
+import { getDateRange } from '@/features/portfolio/utils/dateRange';
+import { formatCurrency, formatPercentage, formatQuantity } from '@/features/portfolio/utils/formatters';
+import { calculateUnrealizedPLPercent, calculateDailyPLPercent } from '@/features/portfolio/utils/calculations';
 
 /**
  * Chart skeleton component for loading state
@@ -52,32 +54,80 @@ const ChartSkeleton = () => (
     </div>
 );
 
-const PortfolioPage = () => {
-    const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
-    const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
-    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingSuggestions, setLoadingSuggestions] = useState(true);
-    const [showSnapshotsSkeleton, setShowSnapshotsSkeleton] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [timeRange, setTimeRange] = useState<TimeRange>('1m');
-    const [dialogOpened, setDialogOpened] = useState(false);
+/**
+ * Portfolio page skeleton component for initial loading state
+ */
+const PortfolioSkeleton = () => (
+    <Stack gap="xl">
+        {/* First Row: Chart (2/3) + Pie Chart (1/3) */}
+        <Grid>
+            <Grid.Col span={{ base: 12, md: 8 }}>
+                <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <ChartSkeleton />
+                </Paper>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+                <Paper shadow="sm" p="lg" radius="md" withBorder h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <Skeleton height={24} width={150} mb="md" />
+                    <Skeleton height={300} radius="md" />
+                </Paper>
+            </Grid.Col>
+        </Grid>
 
-    const loadPortfolio = async () => {
-        console.log('Loading portfolio...');
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await portfolioApi.getPortfolio();
-            console.log('Portfolio loaded:', data);
-            setPortfolio(data);
-        } catch (err) {
-            console.error('Error loading portfolio:', err);
-            setError(err instanceof Error ? err.message : 'Failed to load portfolio');
-        } finally {
-            setLoading(false);
-        }
-    };
+        {/* Second Row: Three Widgets */}
+        <Grid>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={100} mb="xs" />
+                    <Skeleton height={32} width={150} mt="xs" />
+                </Card>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={120} mb="xs" />
+                    <Skeleton height={32} width={150} mt="xs" />
+                    <Skeleton height={16} width={80} mt={4} />
+                </Card>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Card shadow="sm" padding="lg" radius="md" withBorder h="100%">
+                    <Skeleton height={16} width={100} mb="xs" />
+                    <Group gap="xs" mt="xs">
+                        <Skeleton height={20} width={20} radius="md" />
+                        <Skeleton height={32} width={120} />
+                    </Group>
+                    <Skeleton height={16} width={80} mt={4} />
+                </Card>
+            </Grid.Col>
+        </Grid>
+
+        {/* AI Suggestions Widget Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Skeleton height={28} width={200} mb="md" />
+            <Skeleton height={100} radius="md" />
+        </Paper>
+
+        {/* Holdings Table Skeleton */}
+        <Paper shadow="sm" p="lg" radius="md" withBorder>
+            <Group justify="space-between" align="center" mb="md">
+                <Skeleton height={28} width={120} />
+                <Skeleton height={36} width={140} radius="md" />
+            </Group>
+            <Stack gap="xs">
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} height={48} radius="md" />
+                ))}
+            </Stack>
+        </Paper>
+    </Stack>
+);
+
+const PortfolioPage = () => {
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(true);
+    const [dialogOpened, setDialogOpened] = useState(false);
+    const { portfolio, loading, error, loadPortfolio } = usePortfolio();
+    const { snapshots, showSkeleton: showSnapshotsSkeleton, timeRange, setTimeRange, loadSnapshots } = useSnapshots('1m');
 
     const loadSuggestions = async () => {
         try {
@@ -91,73 +141,10 @@ const PortfolioPage = () => {
         }
     };
 
-    const getDateRange = useCallback((range: TimeRange): { from: string; to: string; granularity: string } => {
-        const to = new Date();
-        let from: Date;
-        let granularity: string;
-
-        switch (range) {
-            case '1d':
-                from = subDays(to, 1);
-                granularity = 'hourly';
-                break;
-            case '1w':
-                from = subDays(to, 7);
-                granularity = '6hourly';
-                break;
-            case '1m':
-                from = subDays(to, 30);
-                granularity = 'daily';
-                break;
-            case 'ytd':
-                from = startOfYear(to);
-                granularity = 'daily';
-                break;
-            case '1y':
-                from = subDays(to, 365);
-                granularity = 'weekly';
-                break;
-            default:
-                from = subDays(to, 30);
-                granularity = 'daily';
-        }
-
-        return {
-            from: format(from, 'yyyy-MM-dd'),
-            to: format(to, 'yyyy-MM-dd'),
-            granularity,
-        };
-    }, []);
-
-    const loadSnapshots = useCallback(async (range?: TimeRange) => {
-        try {
-            const rangeToUse = range || timeRange;
-            const { from, to, granularity } = getDateRange(rangeToUse);
-
-            setShowSnapshotsSkeleton(false);
-
-            // Set a timeout to show skeleton after 1 second
-            const skeletonTimeout = setTimeout(() => {
-                setShowSnapshotsSkeleton(true);
-            }, 1000);
-
-            try {
-                const data = await portfolioApi.getSnapshots(from, to, granularity);
-                setSnapshots(data.series);
-            } finally {
-                clearTimeout(skeletonTimeout);
-                setShowSnapshotsSkeleton(false);
-            }
-        } catch (err) {
-            console.error('Failed to load snapshots:', err);
-            setShowSnapshotsSkeleton(false);
-        }
-    }, [timeRange, getDateRange]);
-
     // Load portfolio and initial snapshots on mount
     useEffect(() => {
         loadPortfolio();
-        loadSnapshots(timeRange);
+        loadSnapshots('1m');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Only run on mount
 
@@ -178,33 +165,6 @@ const PortfolioPage = () => {
         loadSnapshots(timeRange);
     };
 
-    const formatCurrency = (value: number | string | null | undefined, currency: string) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency || 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        }).format(numValue);
-    };
-
-    const formatPercentage = (value: number | string | null | undefined) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        const sign = numValue >= 0 ? '+' : '';
-        return `${sign}${numValue.toFixed(2)}%`;
-    };
-
-    const formatQuantity = (value: number | string | null | undefined) => {
-        if (value === null || value === undefined) return '~';
-        const numValue = typeof value === 'string' ? parseFloat(value) : value;
-        if (isNaN(numValue)) return '~';
-        return numValue.toFixed(4);
-    };
-
     if (loading && !portfolio) {
         return (
             <ProtectedRoute>
@@ -212,7 +172,11 @@ const PortfolioPage = () => {
                     <AppNav />
                     <AppShell.Main>
                         <Container size="xl" py="xl">
-                            <Loader size="xl" />
+                            <Stack gap="xl">
+                                {/* Header - Always render since it's not dynamic */}
+                                <Title order={1}>Portfolio</Title>
+                                <PortfolioSkeleton />
+                            </Stack>
                         </Container>
                     </AppShell.Main>
                 </AppShell>
@@ -245,14 +209,8 @@ const PortfolioPage = () => {
     };
 
     // Calculate percentages
-    const unrealizedPLPercent = totals.totalCostBasis !== 0
-        ? (Number(totals.unrealizedPL) / Number(totals.totalCostBasis)) * 100
-        : 0;
-
-    const previousValue = Number(totals.totalValue) - Number(totals.dailyPL);
-    const dailyPLPercent = previousValue !== 0 && totals.dailyPL !== 0
-        ? (Number(totals.dailyPL) / previousValue) * 100
-        : 0;
+    const unrealizedPLPercent = calculateUnrealizedPLPercent(totals);
+    const dailyPLPercent = calculateDailyPLPercent(totals);
 
     return (
         <ProtectedRoute>
