@@ -95,6 +95,8 @@ async def add_position(
             portfolioId=str(portfolio.id),
             transactionIds=[str(tx_id) for tx_id in transaction_ids],
         )
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
