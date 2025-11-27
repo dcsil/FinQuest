@@ -202,6 +202,8 @@ async def get_module(
             questions=schema_questions
         )
         
+    except HTTPException:
+        raise
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

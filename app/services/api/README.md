@@ -107,14 +107,17 @@ uv sync --group dev
 # Run tests
 uv run pytest
 
-# Run tests with coverage report
-uv run pytest --cov=src/finquest_api --cov-report=term-missing --cov-report=html
+# Run tests with coverage report (includes all files, even 100% covered)
+# Note: Files with 100% coverage ARE included in the total percentage calculation,
+# but may be hidden from the detailed report. To see all files, use:
+uv run pytest --cov=src/finquest_api --cov-report=term --cov-report=term-missing --cov-report=html
 
-# Run tests with coverage summary only
+# Run tests with coverage summary only (skips 100% covered files for brevity)
 uv run pytest --cov=src/finquest_api --cov-report=term-missing:skip-covered
 ```
 
 Coverage reports:
+
 - Terminal output: Shows coverage percentage and missing lines
 - HTML report: Generated in `htmlcov/index.html` (open in browser for detailed view)
 
