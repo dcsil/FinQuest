@@ -19,6 +19,7 @@ import {
 import { IconUser, IconMail, IconCalendar, IconTrendingUp, IconTarget, IconWallet, IconShield } from '@tabler/icons-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
+import { BadgesGrid } from '@/components/BadgesGrid';
 import { AppShell } from '@mantine/core';
 import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/lib/api';
@@ -222,6 +223,11 @@ const ProfilePage = () => {
                                         )}
                                     </Stack>
                                 )}
+                            </Paper>
+
+                            {/* Badges Section */}
+                            <Paper shadow="sm" p="lg" radius="md" withBorder>
+                                <BadgesGrid />
                             </Paper>
                         </Stack>
                     </Container>

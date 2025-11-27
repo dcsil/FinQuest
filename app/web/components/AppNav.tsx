@@ -2,13 +2,15 @@
  * Application Navigation Component
  */
 import { useState, useEffect } from 'react';
-import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip } from '@mantine/core';
+import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
 import { IconLogout, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import FinQuestLogo from '../assets/FinQuestLogo.png';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGamification } from '@/contexts/GamificationContext';
 
 const ColorSchemeToggle = () => {
     const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -31,6 +33,63 @@ const ColorSchemeToggle = () => {
                 {mounted ? (isDark ? <IconSun size={20} /> : <IconMoon size={20} />) : <IconMoon size={20} />}
             </ActionIcon>
         </Tooltip>
+    );
+};
+
+const getLevelBorderColor = (level: number): string => {
+    if (level >= 7) return '#f6d365'; // Gold
+    if (level >= 4) return '#667eea'; // Blue
+    return '#9ca3af'; // Grey
+};
+
+const ProfileAvatarWithLevel = () => {
+    const { user } = useAuth();
+    const { level } = useGamification();
+    const router = useRouter();
+
+    const borderColor = getLevelBorderColor(level);
+    const borderWidth = level >= 7 ? 3 : level >= 4 ? 2 : 1;
+
+    return (
+        <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+            style={{ position: 'relative' }}
+        >
+            <Avatar
+                src={null}
+                alt={user?.email || 'User'}
+                radius="xl"
+                style={{
+                    cursor: 'pointer',
+                    border: `${borderWidth}px solid ${borderColor}`,
+                    boxShadow: level >= 7 ? `0 0 8px ${borderColor}` : 'none',
+                }}
+            >
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
+            </Avatar>
+            <Badge
+                size="xs"
+                radius="xl"
+                style={{
+                    position: 'absolute',
+                    bottom: -4,
+                    right: -4,
+                    border: `2px solid white`,
+                    background: borderColor,
+                    color: level >= 7 ? '#000' : '#fff',
+                    fontWeight: 700,
+                    fontSize: '10px',
+                    minWidth: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                {level}
+            </Badge>
+        </motion.div>
     );
 };
 
@@ -82,14 +141,7 @@ export const AppNav = () => {
                         <ColorSchemeToggle />
                         <Menu shadow="md" width={200}>
                             <Menu.Target>
-                                <Avatar
-                                    src={null}
-                                    alt={user?.email || 'User'}
-                                    radius="xl"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    {user?.email?.charAt(0).toUpperCase() || 'U'}
-                                </Avatar>
+                                <ProfileAvatarWithLevel />
                             </Menu.Target>
                             <Menu.Dropdown>
                                 <Menu.Label>{user?.email}</Menu.Label>

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import health, api, auth
 from .config import settings
-from .routers import portfolio, users, modules
+from .routers import portfolio, users, modules, gamification
 
 # Create FastAPI app instance
 app = FastAPI(
@@ -34,6 +34,9 @@ app.include_router(modules.router, prefix="/api/v1/modules", tags=["modules"])
 
 # Include portfolio router
 app.include_router(portfolio.router, prefix="/api", tags=["portfolio"])
+
+# Include gamification router
+app.include_router(gamification.router, prefix="/api/gamification", tags=["gamification"])
 
 
 @app.get("/")

@@ -62,6 +62,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         if (!error) {
+            // Trigger login gamification event (will be handled by GamificationProvider)
+            // We'll use a custom event that GamificationProvider listens to
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('gamification:login'));
+            }
             router.push('/');
         }
 

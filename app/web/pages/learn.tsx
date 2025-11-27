@@ -12,9 +12,12 @@ import {
 } from "@mantine/core";
 import { AppNav } from "@/components/AppNav";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { XPBar } from "@/components/XPBar";
+import { StreakIndicator } from "@/components/StreakIndicator";
 import { usersApi } from "@/lib/api";
 import type { Suggestion } from "@/types/learning";
 import { LearningPathway } from "@/components/LearningPathway";
+import { Group } from "@mantine/core";
 
 /**
  * Learning page skeleton component for loading state
@@ -91,10 +94,18 @@ const Learn = () => {
                     <Container size="xl" pt="xl">
                         <Stack gap="xl">
                             <div>
-                                <Title order={1}>Your Learning Path</Title>
-                                <Text c="dimmed" size="lg">
-                                    Personalized modules to help you reach your financial goals.
-                                </Text>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '8px' }}>
+                                    <div>
+                                        <Title order={1}>Your Learning Path</Title>
+                                        <Text c="dimmed" size="lg">
+                                            Personalized modules to help you reach your financial goals.
+                                        </Text>
+                                    </div>
+                                    <Group gap="md">
+                                        <StreakIndicator />
+                                        <XPBar />
+                                    </Group>
+                                </div>
                             </div>
 
                             {loading ? (

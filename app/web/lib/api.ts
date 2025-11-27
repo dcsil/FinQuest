@@ -171,3 +171,77 @@ export const modulesApi = {
     },
 };
 
+/**
+ * Gamification types
+ */
+export interface GamificationEventRequest {
+    event_type: 'login' | 'module_completed' | 'quiz_completed' | 'portfolio_position_added' | 'portfolio_position_updated';
+    module_id?: string;
+    quiz_score?: number;
+    quiz_completed_at?: string;
+    portfolio_position_id?: string;
+    is_first_time_for_module?: boolean;
+}
+
+export interface BadgeInfo {
+    code: string;
+    name: string;
+    description: string;
+}
+
+export interface GamificationEventResponse {
+    total_xp: number;
+    level: number;
+    current_streak: number;
+    xp_gained: number;
+    level_up: boolean;
+    new_badges: BadgeInfo[];
+    xp_to_next_level: number;
+}
+
+export interface GamificationStateResponse {
+    total_xp: number;
+    level: number;
+    current_streak: number;
+    xp_to_next_level: number;
+    badges: BadgeInfo[];
+}
+
+export interface BadgeDefinitionResponse {
+    code: string;
+    name: string;
+    description: string;
+    category: string;
+    is_active: boolean;
+    earned: boolean;
+}
+
+/**
+ * Gamification API client
+ */
+export const gamificationApi = {
+    /**
+     * Send a gamification event
+     */
+    sendEvent: async (event: GamificationEventRequest): Promise<GamificationEventResponse> => {
+        return apiRequest<GamificationEventResponse>('/api/gamification/event', {
+            method: 'POST',
+            body: JSON.stringify(event),
+        });
+    },
+
+    /**
+     * Get current gamification state
+     */
+    getState: async (): Promise<GamificationStateResponse> => {
+        return apiRequest<GamificationStateResponse>('/api/gamification/me');
+    },
+
+    /**
+     * Get all badges
+     */
+    getBadges: async (): Promise<BadgeDefinitionResponse[]> => {
+        return apiRequest<BadgeDefinitionResponse[]>('/api/gamification/badges');
+    },
+};
+
