@@ -2,7 +2,7 @@
  * Application Navigation Component
  */
 import { useState, useEffect } from 'react';
-import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge, UnstyledButton } from '@mantine/core';
+import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge, Box } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
 import { IconLogout, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
 import Image from 'next/image';
@@ -43,62 +43,10 @@ const getLevelBorderColor = (level: number): string => {
     return '#9ca3af'; // Grey
 };
 
-const ProfileAvatarWithLevel = () => {
-    const { user } = useAuth();
-    const { level } = useGamification();
-
-    const borderColor = getLevelBorderColor(level);
-    const borderWidth = level >= 7 ? 3 : level >= 4 ? 2 : 1;
-
-    return (
-        <UnstyledButton
-            style={{
-                position: 'relative',
-                display: 'inline-block',
-                cursor: 'pointer',
-            }}
-        >
-            <Avatar
-                src={null}
-                alt={user?.email || 'User'}
-                radius="xl"
-                style={{
-                    border: `${borderWidth}px solid ${borderColor}`,
-                    boxShadow: level >= 7 ? `0 0 8px ${borderColor}` : 'none',
-                }}
-            >
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
-            </Avatar>
-            <Badge
-                size="xs"
-                radius="xl"
-                style={{
-                    position: 'absolute',
-                    bottom: -4,
-                    right: -4,
-                    border: `2px solid white`,
-                    background: borderColor,
-                    color: level >= 7 ? '#000' : '#fff',
-                    fontWeight: 700,
-                    fontSize: '10px',
-                    minWidth: '20px',
-                    height: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    pointerEvents: 'none',
-                    zIndex: 1,
-                }}
-            >
-                {level}
-            </Badge>
-        </UnstyledButton>
-    );
-};
-
 export const AppNav = () => {
     const router = useRouter();
     const { user, signOut } = useAuth();
+    const { level } = useGamification();
 
     const handleSignOut = async () => {
         await signOut();
@@ -144,9 +92,42 @@ export const AppNav = () => {
                         <StreakIndicator compact />
                         <XPBar compact />
                         <ColorSchemeToggle />
-                        <Menu shadow="md" width={200}>
+                        <Menu shadow="md" width={200} position="bottom-end">
                             <Menu.Target>
-                                <ProfileAvatarWithLevel />
+                                <Box style={{ position: 'relative' }}>
+                                    <Avatar
+                                        src={null}
+                                        alt={user?.email || 'User'}
+                                        radius="xl"
+                                        style={{
+                                            border: `1px solid ${getLevelBorderColor(level)}`,
+                                            boxShadow: level >= 7 ? `0 0 8px ${getLevelBorderColor(level)}` : 'none',
+                                        }}
+                                    >
+                                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                                    </Avatar>
+                                    <Badge
+                                        size="xs"
+                                        radius="xl"
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: -6,
+                                            right: -6,
+                                            border: `2px solid white`,
+                                            background: getLevelBorderColor(level),
+                                            fontWeight: 700,
+                                            fontSize: '10px',
+                                            color: level >= 7 ? '#000' : '#fff',
+                                            minWidth: '20px',
+                                            height: '20px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        {level}
+                                    </Badge>
+                                </Box>
                             </Menu.Target>
                             <Menu.Dropdown>
                                 <Menu.Label>{user?.email}</Menu.Label>
