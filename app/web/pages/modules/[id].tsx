@@ -49,12 +49,15 @@ export default function ModulePage() {
         try {
             await modulesApi.submitAttempt(moduleId, score, total, passed);
             
-            // Trigger gamification events
-            const isFirstTime = !completedModules.has(moduleId);
-            await triggerModuleCompleted(moduleId, isFirstTime);
-            setCompletedModules((prev) => new Set(prev).add(moduleId));
-            
-            await triggerQuizCompleted(percentage);
+            // Only trigger gamification events if quiz was passed
+            if (passed) {
+                // Trigger gamification events
+                const isFirstTime = !completedModules.has(moduleId);
+                await triggerModuleCompleted(moduleId, isFirstTime);
+                setCompletedModules((prev) => new Set(prev).add(moduleId));
+                
+                await triggerQuizCompleted(percentage);
+            }
         } catch (err) {
             console.error("Failed to submit attempt:", err);
         }

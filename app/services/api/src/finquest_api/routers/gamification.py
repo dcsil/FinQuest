@@ -117,25 +117,24 @@ async def handle_gamification_event(
             xp_gained += XP_REWARDS["module_completed_first_time"]
     
     elif event.event_type == "quiz_completed":
-        stats.total_quizzes_completed += 1
-        
-        if event.quiz_score is not None:
+        # Only award XP and update stats if quiz was passed (score >= 70%)
+        if event.quiz_score is not None and event.quiz_score >= 70:
+            stats.total_quizzes_completed += 1
+            
             if event.quiz_score >= 80:
                 xp_gained += XP_REWARDS["quiz_completed_high"]
             else:
                 xp_gained += XP_REWARDS["quiz_completed_low"]
-        else:
-            xp_gained += XP_REWARDS["quiz_completed_low"]
-        
-        # Update streak
-        if quiz_date is None:
-            quiz_date = datetime.utcnow().date()
-        
-        streak_incremented = update_streak(db, stats, quiz_date)
-        # Only count as incremented if streak actually increased
-        streak_incremented = streak_incremented and stats.current_streak > previous_streak
-        if streak_incremented:
-            xp_gained += XP_REWARDS["streak_bonus"]
+            
+            # Update streak only for passed quizzes
+            if quiz_date is None:
+                quiz_date = datetime.utcnow().date()
+            
+            streak_incremented = update_streak(db, stats, quiz_date)
+            # Only count as incremented if streak actually increased
+            streak_incremented = streak_incremented and stats.current_streak > previous_streak
+            if streak_incremented:
+                xp_gained += XP_REWARDS["streak_bonus"]
     
     elif event.event_type == "portfolio_position_added":
         xp_gained += XP_REWARDS["portfolio_position_added"]

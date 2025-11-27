@@ -2,14 +2,38 @@
 Seed badge definitions into the database.
 """
 import sys
+import os
 from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy.orm import Session
-from finquest_api.db.session import get_engine, SessionLocal
-from finquest_api.db.models import BadgeDefinition
+# Load environment variables before importing database modules
+# Note: pydantic-settings will also load .env automatically, but we try dotenv first
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"Loaded environment from {env_path}")
+    else:
+        print(f"Note: .env file not found at {env_path}")
+        print("Using environment variables or pydantic-settings will load .env")
+except ImportError:
+    print("Note: python-dotenv not available, relying on pydantic-settings for .env loading")
+
+print("Importing database modules...")
+try:
+    from sqlalchemy.orm import Session
+    from finquest_api.db.session import get_engine, SessionLocal
+    from finquest_api.db.models import BadgeDefinition
+    print("Database modules imported successfully")
+except Exception as e:
+    print(f"❌ Error importing database modules: {e}")
+    print("This might be due to missing SUPABASE_DB_URL environment variable")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
 
 
 BADGE_DEFINITIONS = [
@@ -101,32 +125,51 @@ BADGE_DEFINITIONS = [
 
 def seed_badges():
     """Seed badge definitions into the database."""
-    engine = get_engine()
-    db: Session = SessionLocal(bind=engine)
-    
     try:
+        print("Getting database engine...")
+        engine = get_engine()
+        print("Creating database session...")
+        db: Session = SessionLocal(bind=engine)
+        
+        print(f"Seeding {len(BADGE_DEFINITIONS)} badge definitions...")
+        added_count = 0
+        skipped_count = 0
+        
         for badge_data in BADGE_DEFINITIONS:
             existing = db.query(BadgeDefinition).filter(
                 BadgeDefinition.code == badge_data["code"]
             ).first()
             
             if existing:
-                print(f"Badge {badge_data['code']} already exists, skipping...")
+                print(f"  ⏭️  Badge {badge_data['code']} already exists, skipping...")
+                skipped_count += 1
                 continue
             
             badge = BadgeDefinition(**badge_data)
             db.add(badge)
-            print(f"Added badge: {badge_data['code']} - {badge_data['name']}")
+            print(f"  ✅ Added badge: {badge_data['code']} - {badge_data['name']}")
+            added_count += 1
         
         db.commit()
-        print("\n✅ Successfully seeded badge definitions!")
+        print(f"\n✅ Successfully seeded badge definitions!")
+        print(f"   Added: {added_count}, Skipped: {skipped_count}")
         
+    except RuntimeError as e:
+        if "SUPABASE_DB_URL" in str(e):
+            print(f"\n❌ Database configuration error: {e}")
+            print("\nPlease set SUPABASE_DB_URL in your environment or .env file")
+            sys.exit(1)
+        raise
     except Exception as e:
-        db.rollback()
+        if db:
+            db.rollback()
         print(f"\n❌ Error seeding badges: {e}")
+        import traceback
+        traceback.print_exc()
         raise
     finally:
-        db.close()
+        if 'db' in locals():
+            db.close()
 
 
 if __name__ == "__main__":
