@@ -1,4 +1,4 @@
-import { Card, Text, Button, Badge, Group, ThemeIcon, Stack, Box } from "@mantine/core";
+import { Card, Text, Button, Badge, Group, ThemeIcon, Stack, Box, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { IconBook, IconChartBar, IconAlertTriangle, IconArrowRight, IconCheck } from "@tabler/icons-react";
 import type { Suggestion } from "@/types/learning";
 import { useRouter } from "next/router";
@@ -59,10 +59,13 @@ const toTitleCase = (str: string): string => {
 
 export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
     const router = useRouter();
+    const { colorScheme } = useMantineColorScheme();
+    const theme = useMantineTheme();
     const [backgroundPosition, setBackgroundPosition] = useState({ x: 0, y: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
     const targetPositionRef = useRef({ x: 0, y: 0 });
     const animationFrameRef = useRef<number | null>(null);
+    const isDark = colorScheme === 'dark';
 
     // Keep suggestions in their original order to preserve pathway sequence
     const sortedSuggestions = [...suggestions];
@@ -117,10 +120,15 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
             style={{
                 position: 'relative',
                 padding: '2rem 0',
-                backgroundImage: `
-                    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-                `,
+                backgroundImage: isDark
+                    ? `
+                        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+                    `
+                    : `
+                        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+                    `,
                 backgroundSize: '20px 20px',
                 backgroundPosition: `${backgroundPosition.x}px ${backgroundPosition.y}px`,
             }}
@@ -134,16 +142,28 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                     const color = getColor(suggestion.metadata?.type, isCompleted);
                     const icon = getIcon(suggestion.metadata?.type);
 
-                    // Determine line color based on completion status
+                    // Determine line color based on completion status and theme
                     const getLineGradient = () => {
-                        if (isCompleted && nextIsCompleted) {
-                            return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
-                        } else if (isCompleted && !nextIsCompleted) {
-                            return 'linear-gradient(to bottom, #51cf66, #228be6)'; // Transition from completed to active
-                        } else if (!isCompleted && nextIsCompleted) {
-                            return 'linear-gradient(to bottom, #228be6, #51cf66)'; // Transition from active to completed
+                        if (isDark) {
+                            if (isCompleted && nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
+                            } else if (isCompleted && !nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #51cf66, #4dabf7)'; // Transition from completed to active (lighter blue for dark mode)
+                            } else if (!isCompleted && nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #4dabf7, #51cf66)'; // Transition from active to completed
+                            } else {
+                                return 'linear-gradient(to bottom, #4dabf7, #74c0fc)'; // Active path (lighter blue for dark mode)
+                            }
                         } else {
-                            return 'linear-gradient(to bottom, #228be6, #74c0fc)'; // Active path
+                            if (isCompleted && nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
+                            } else if (isCompleted && !nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #51cf66, #228be6)'; // Transition from completed to active
+                            } else if (!isCompleted && nextIsCompleted) {
+                                return 'linear-gradient(to bottom, #228be6, #51cf66)'; // Transition from active to completed
+                            } else {
+                                return 'linear-gradient(to bottom, #228be6, #74c0fc)'; // Active path
+                            }
                         }
                     };
 
@@ -161,12 +181,16 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                     opacity: isCompleted ? 0.7 : 1,
                                     cursor: isCompleted ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.2s ease',
-                                    background: isCompleted ? '#f8f9fa' : 'white',
+                                    backgroundColor: isDark
+                                        ? (isCompleted ? theme.colors.dark[7] : theme.colors.dark[6])
+                                        : (isCompleted ? '#f8f9fa' : 'white'),
                                 }}
                                 onMouseEnter={(e) => {
                                     if (!isCompleted) {
                                         e.currentTarget.style.transform = 'translateY(-4px)';
-                                        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+                                        e.currentTarget.style.boxShadow = isDark
+                                            ? '0 8px 16px rgba(0, 0, 0, 0.4)'
+                                            : '0 8px 16px rgba(0, 0, 0, 0.15)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
@@ -199,7 +223,7 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                                                 position: 'absolute',
                                                                 bottom: '-4px',
                                                                 right: '-4px',
-                                                                border: '2px solid white',
+                                                                border: `2px solid ${isDark ? theme.colors.dark[6] : 'white'}`,
                                                             }}
                                                         >
                                                             <IconCheck size={12} />
@@ -207,11 +231,18 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                                     )}
                                                 </ThemeIcon>
                                                 <div>
-                                                    <Text fw={600} size="lg" c={isCompleted ? "dimmed" : "dark"}>
+                                                    <Text
+                                                        fw={600}
+                                                        size="lg"
+                                                        c={isCompleted
+                                                            ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
+                                                            : (isDark ? theme.colors.dark[0] : theme.colors.dark[9])
+                                                        }
+                                                    >
                                                         {toTitleCase(suggestion.metadata?.topic || "General Learning")}
                                                     </Text>
                                                     {isCompleted && (
-                                                        <Badge color="green" variant="light" size="sm" mt={4}>
+                                                        <Badge color="green" variant={isDark ? "light" : "light"} size="sm" mt={4}>
                                                             Completed
                                                         </Badge>
                                                     )}
@@ -225,24 +256,34 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                         </Group>
 
                                         {/* Description */}
-                                        <Text size="sm" c={isCompleted ? "dimmed" : "dark"} style={{ lineHeight: 1.6 }}>
+                                        <Text
+                                            size="sm"
+                                            c={isCompleted
+                                                ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
+                                                : (isDark ? theme.colors.dark[1] : theme.colors.dark[7])
+                                            }
+                                            style={{ lineHeight: 1.6 }}
+                                        >
                                             {suggestion.reason}
                                         </Text>
 
                                         {/* Action Button */}
                                         {isCompleted ? (
                                             <Button
-                                                variant="light"
+                                                variant={isDark ? "subtle" : "light"}
                                                 color="gray"
                                                 fullWidth
                                                 disabled
                                                 leftSection={<IconCheck size={16} />}
+                                                style={{
+                                                    color: isDark ? theme.colors.dark[2] : theme.colors.gray[6],
+                                                }}
                                             >
                                                 Module Completed
                                             </Button>
                                         ) : (
                                             <Button
-                                                variant="light"
+                                                variant={isDark ? "light" : "light"}
                                                 color={color}
                                                 fullWidth
                                                 rightSection={<IconArrowRight size={14} />}
@@ -273,9 +314,13 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                                         background: getLineGradient(),
                                         zIndex: 1,
                                         borderRadius: '2px',
-                                        boxShadow: isCompleted || nextIsCompleted
-                                            ? '0 0 8px rgba(81, 207, 102, 0.3)'
-                                            : '0 0 8px rgba(34, 139, 230, 0.3)',
+                                        boxShadow: isDark
+                                            ? (isCompleted || nextIsCompleted
+                                                ? '0 0 8px rgba(81, 207, 102, 0.4)'
+                                                : '0 0 8px rgba(77, 171, 247, 0.4)')
+                                            : (isCompleted || nextIsCompleted
+                                                ? '0 0 8px rgba(81, 207, 102, 0.3)'
+                                                : '0 0 8px rgba(34, 139, 230, 0.3)'),
                                         pointerEvents: 'none',
                                     }}
                                 />
