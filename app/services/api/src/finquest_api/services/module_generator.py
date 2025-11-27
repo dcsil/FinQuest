@@ -43,8 +43,11 @@ class ModuleGenerator:
             profile_context += f"- Experience Level: {answers.get('investingExperience', 'Not specified')}\n"
             profile_context += f"- Risk Tolerance: {answers.get('riskTolerance', 'Not specified')}\n"
             profile_context += f"- Investment Horizon: {answers.get('investmentHorizon', 'Not specified')}\n"
+            country = answers.get('country', 'US')
+            profile_context += f"- Country: {country}\n"
         else:
             profile_context += "No specific profile data available.\n"
+            country = 'US'  # Default to US if no profile data
 
         # Get portfolio context
         portfolio_context = "Portfolio Context:\n"
@@ -88,18 +91,37 @@ class ModuleGenerator:
             "Output MUST be valid JSON matching the specified schema."
         )
 
+        # Get country for context
+        country = onboarding.answers.get('country', 'US') if onboarding else 'US'
+        country_name = {
+            'US': 'United States', 'CA': 'Canada', 'GB': 'United Kingdom', 'AU': 'Australia',
+            'DE': 'Germany', 'FR': 'France', 'IT': 'Italy', 'ES': 'Spain', 'NL': 'Netherlands',
+            'BE': 'Belgium', 'CH': 'Switzerland', 'AT': 'Austria', 'SE': 'Sweden', 'NO': 'Norway',
+            'DK': 'Denmark', 'FI': 'Finland', 'IE': 'Ireland', 'PT': 'Portugal', 'PL': 'Poland',
+            'CZ': 'Czech Republic', 'GR': 'Greece', 'JP': 'Japan', 'CN': 'China', 'IN': 'India',
+            'SG': 'Singapore', 'HK': 'Hong Kong', 'KR': 'South Korea', 'TW': 'Taiwan', 'NZ': 'New Zealand',
+            'BR': 'Brazil', 'MX': 'Mexico', 'AR': 'Argentina', 'ZA': 'South Africa', 'AE': 'United Arab Emirates',
+            'IL': 'Israel', 'TR': 'Turkey', 'RU': 'Russia'
+        }.get(country, country)
+
         user_prompt = (
             f"Create a learning module about: '{topic}'.\n"
             f"Reason for recommendation: {reason}\n\n"
             f"{profile_context}\n"
             f"{portfolio_context}\n\n"
-            "Requirements:\n"
-            "1. Title: Catchy and relevant.\n"
-            "2. Body: Markdown format. Use headers, bullet points, and bold text. "
-            "Explain the concept using the user's specific context (e.g. 'Since your goal is X...'). "
-            "Keep it under 500 words.\n"
-            "3. Questions: Exactly 3 multiple-choice questions to test understanding. "
-            "Each question must have 3-4 choices, one correct."
+            f"IMPORTANT: The user is based in {country_name} ({country}). "
+            f"Tailor all content to their country's financial regulations, tax systems, investment options, "
+            f"and market practices. Use country-specific examples, regulations, and financial products where relevant. "
+            f"If discussing tax-advantaged accounts, use the appropriate accounts for their country (e.g., RRSP/TFSA for Canada, "
+            f"ISA for UK, Superannuation for Australia, 401(k)/IRA for US, etc.).\n\n"
+            f"Requirements:\n"
+            f"1. Title: Catchy and relevant.\n"
+            f"2. Body: Markdown format. Use headers, bullet points, and bold text. "
+            f"Explain the concept using the user's specific context (e.g. 'Since your goal is X...'). "
+            f"Tailor examples and explanations to {country_name} financial systems and regulations. "
+            f"Keep it under 500 words.\n"
+            f"3. Questions: Exactly 3 multiple-choice questions to test understanding. "
+            f"Each question must have 3-4 choices, one correct. Questions should be relevant to {country_name} financial context."
         )
 
         # Call LLM

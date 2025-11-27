@@ -19,6 +19,7 @@ import { ValueChart, type TimeRange } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
 import { XPBar } from '@/components/XPBar';
 import { StreakIndicator } from '@/components/StreakIndicator';
+import { GamificationEngagement } from '@/components/GamificationEngagement';
 import { portfolioApi, usersApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
 import type { Suggestion } from '@/types/learning';
@@ -218,6 +219,12 @@ const DashboardPage = () => {
                         <Stack gap="xl">
                             {/* Header */}
                             <Title order={1}>Dashboard</Title>
+
+                            {/* Gamification Engagement */}
+                            <GamificationEngagement 
+                                suggestions={suggestions} 
+                                loadingSuggestions={loadingSuggestions}
+                            />
 
                             {/* My Investments Section */}
                             <div>

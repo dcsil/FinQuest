@@ -5,6 +5,7 @@ export interface UserProfile {
     annualIncome?: string;
     investmentAmount?: string;
     riskTolerance?: string;
+    country?: string;
 }
 
 export type UpdateProfileRequest = UserProfile;

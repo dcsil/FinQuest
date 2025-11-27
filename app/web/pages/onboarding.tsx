@@ -35,6 +35,7 @@ interface OnboardingData {
     annualIncome: string;
     investmentAmount: string;
     riskTolerance: string;
+    country: string;
 }
 
 const financialGoalsOptions = [
@@ -68,6 +69,46 @@ const riskToleranceOptions = [
     "Moderate",
     "Moderately Aggressive",
     "Aggressive",
+];
+
+const countries = [
+    { value: "US", label: "United States" },
+    { value: "CA", label: "Canada" },
+    { value: "GB", label: "United Kingdom" },
+    { value: "AU", label: "Australia" },
+    { value: "DE", label: "Germany" },
+    { value: "FR", label: "France" },
+    { value: "IT", label: "Italy" },
+    { value: "ES", label: "Spain" },
+    { value: "NL", label: "Netherlands" },
+    { value: "BE", label: "Belgium" },
+    { value: "CH", label: "Switzerland" },
+    { value: "AT", label: "Austria" },
+    { value: "SE", label: "Sweden" },
+    { value: "NO", label: "Norway" },
+    { value: "DK", label: "Denmark" },
+    { value: "FI", label: "Finland" },
+    { value: "IE", label: "Ireland" },
+    { value: "PT", label: "Portugal" },
+    { value: "PL", label: "Poland" },
+    { value: "CZ", label: "Czech Republic" },
+    { value: "GR", label: "Greece" },
+    { value: "JP", label: "Japan" },
+    { value: "CN", label: "China" },
+    { value: "IN", label: "India" },
+    { value: "SG", label: "Singapore" },
+    { value: "HK", label: "Hong Kong" },
+    { value: "KR", label: "South Korea" },
+    { value: "TW", label: "Taiwan" },
+    { value: "NZ", label: "New Zealand" },
+    { value: "BR", label: "Brazil" },
+    { value: "MX", label: "Mexico" },
+    { value: "AR", label: "Argentina" },
+    { value: "ZA", label: "South Africa" },
+    { value: "AE", label: "United Arab Emirates" },
+    { value: "IL", label: "Israel" },
+    { value: "TR", label: "Turkey" },
+    { value: "RU", label: "Russia" },
 ];
 
 const Onboarding = () => {
@@ -106,6 +147,7 @@ const Onboarding = () => {
         annualIncome: "",
         investmentAmount: "",
         riskTolerance: "Moderate",
+        country: "US",
     });
 
     const totalSteps = 5;
@@ -215,6 +257,16 @@ const Onboarding = () => {
                             size="md"
                             searchable
                         />
+
+                        <Select
+                            label="Which country are you based in?"
+                            placeholder="Select your country"
+                            data={countries}
+                            value={data.country}
+                            onChange={(value) => setData({ ...data, country: value || "US" })}
+                            size="md"
+                            searchable
+                        />
                     </Stack>
                 );
 
@@ -302,6 +354,7 @@ const Onboarding = () => {
                                 <Text><strong>Annual Income:</strong> {data.annualIncome ? incomeRanges.find(r => r.value === data.annualIncome)?.label : "Not specified"}</Text>
                                 <Text><strong>Initial Investment:</strong> {data.investmentAmount ? investmentAmounts.find(r => r.value === data.investmentAmount)?.label : "Not specified"}</Text>
                                 <Text><strong>Risk Tolerance:</strong> {data.riskTolerance}</Text>
+                                <Text><strong>Country:</strong> {data.country ? countries.find(c => c.value === data.country)?.label : "Not specified"}</Text>
                             </Stack>
                         </Paper>
 
@@ -437,7 +490,7 @@ const Onboarding = () => {
                                     loading={loading && currentStep === totalSteps}
                                     disabled={
                                         (currentStep === 1 && !data.financialGoals) ||
-                                        (currentStep === 2 && (!data.age || !data.annualIncome)) ||
+                                        (currentStep === 2 && (!data.age || !data.annualIncome || !data.country)) ||
                                         (currentStep === 3 && (!data.investmentAmount || !data.riskTolerance))
                                     }
                                 >
