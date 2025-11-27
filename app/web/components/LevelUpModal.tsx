@@ -69,3 +69,4 @@ export const LevelUpModal = ({ opened, onClose, newLevel }: LevelUpModalProps) =
     );
 };
 
+

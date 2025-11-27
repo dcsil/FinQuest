@@ -35,3 +35,4 @@ class TestLLMServiceExtended:
         assert result == mock_completion
         mock_client.acomplete.assert_called_once_with(request)
 
+

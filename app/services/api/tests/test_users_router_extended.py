@@ -70,3 +70,4 @@ class TestUsersDependencies:
                 
                 mock_db.close.assert_called_once()
 
+

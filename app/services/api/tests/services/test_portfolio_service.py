@@ -385,3 +385,4 @@ class TestGetPortfolioView:
                     assert result.positions[0].symbol == "AAPL"
                     assert result.totals.totalValue > Decimal("0")
 
+

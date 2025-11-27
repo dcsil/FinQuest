@@ -145,3 +145,4 @@ class TestGetCurrentUser:
         assert exc_info.value.status_code == 401
         assert "Invalid user ID format" in exc_info.value.detail
 
+

@@ -214,3 +214,4 @@ async def test_openai_parse_structured_output_invalid_json(monkeypatch):
     # Should handle JSON decode error gracefully
     assert result.structured_output is None
 
+

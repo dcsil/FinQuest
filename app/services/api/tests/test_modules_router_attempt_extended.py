@@ -137,3 +137,4 @@ class TestSubmitModuleAttemptExtended:
             # Should not trigger background task since not all are completed
             mock_background_tasks.add_task.assert_not_called()
 
+

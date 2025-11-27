@@ -167,3 +167,4 @@ async def test_gemini_client_empty_content(monkeypatch):
     
     assert result.message.content == ""
 
+

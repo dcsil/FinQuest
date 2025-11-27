@@ -113,3 +113,4 @@ class TestGamificationEventExtended:
                     # Should not add streak bonus
                     assert result.streak_incremented is False
 
+

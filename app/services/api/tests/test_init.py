@@ -25,3 +25,4 @@ class TestMain:
         """Test version constant"""
         assert __version__ == "0.1.0"
 
+

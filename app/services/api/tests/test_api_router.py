@@ -16,3 +16,4 @@ class TestApiRoot:
         assert result["message"] == "FinQuest API v1"
         assert result["version"] == "0.1.0"
 
+

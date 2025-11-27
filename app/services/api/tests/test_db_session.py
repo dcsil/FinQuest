@@ -151,3 +151,4 @@ class TestInitDatabase:
                 
                 mock_metadata.create_all.assert_called_once_with(bind=mock_engine)
 
+

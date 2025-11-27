@@ -69,3 +69,4 @@ export const StreakModal = ({ opened, onClose, streak }: StreakModalProps) => {
     );
 };
 
+

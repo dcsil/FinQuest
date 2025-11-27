@@ -65,3 +65,4 @@ class TestBuildLLMClient:
         from finquest_api.services.llm.providers.gemini import GeminiChatClient
         assert isinstance(client, GeminiChatClient)
 
+

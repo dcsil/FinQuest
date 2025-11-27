@@ -250,3 +250,4 @@ class TestGetAllBadges:
         assert result[1].code == "badge2"
         assert result[1].earned is False
 
+

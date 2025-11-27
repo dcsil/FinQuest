@@ -44,3 +44,4 @@ class TestSingletonLLMService:
         # Should be the same instance due to lru_cache
         assert service1 is service2
 
+

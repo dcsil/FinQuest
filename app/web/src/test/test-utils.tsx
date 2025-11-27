@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react'
-import { render, RenderOptions } from '@testing-library/react'
+import { render, RenderOptions, renderHook as rtlRenderHook, RenderHookOptions } from '@testing-library/react'
 import { MantineProvider } from '@mantine/core'
 import { vi } from 'vitest'
 
@@ -68,11 +68,20 @@ const customRender = (
     options?: Omit<RenderOptions, 'wrapper'>,
 ) => render(ui, { wrapper: AllTheProviders, ...options })
 
+// Custom renderHook function that includes Mantine provider
+const customRenderHook = <T,>(
+    hook: () => T,
+    options?: Omit<RenderHookOptions<T>, 'wrapper'>,
+) => rtlRenderHook(hook, { wrapper: AllTheProviders, ...options })
+
 // Re-export everything
 export * from '@testing-library/react'
 
 // Override render method
 export { customRender as render }
+
+// Override renderHook method
+export { customRenderHook as renderHook }
 
 // Export mock router for tests that need to interact with it
 export { mockRouter }

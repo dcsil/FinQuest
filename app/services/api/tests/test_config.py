@@ -104,3 +104,4 @@ class TestSettings:
         assert llm_settings.default_timeout_seconds == 60.0
         assert llm_settings.max_retries == 3
 
+

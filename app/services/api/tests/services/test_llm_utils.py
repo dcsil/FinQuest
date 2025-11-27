@@ -148,3 +148,4 @@ class TestDereferenceSchema:
         # Should leave the $ref as-is if definition is missing
         assert "$ref" in str(result["properties"]["user"])
 
+
