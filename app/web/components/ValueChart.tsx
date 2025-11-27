@@ -288,13 +288,13 @@ export const ValueChart = ({
                                     const value = payload[0].value as number;
                                     return (
                                         <div style={{
-                                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                                            border: '1px solid #e5e7eb',
+                                            backgroundColor: isDark ? 'rgba(37, 38, 43, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                                            border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
                                             borderRadius: '8px',
                                             padding: '10px 14px',
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                                            boxShadow: isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.08)',
                                         }}>
-                                            <div style={{ fontWeight: 600, marginBottom: '6px', color: '#111827' }}>
+                                            <div style={{ fontWeight: 600, marginBottom: '6px', color: isDark ? '#fff' : '#111827' }}>
                                                 {format(new Date(date), tooltipFormat)}
                                             </div>
                                             <div style={{ color: '#2563eb', fontWeight: 500 }}>

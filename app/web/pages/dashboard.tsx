@@ -10,6 +10,8 @@ import {
     Paper,
     AppShell,
     Skeleton,
+    useMantineColorScheme,
+    useMantineTheme,
 } from '@mantine/core';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
@@ -45,6 +47,9 @@ const DashboardSkeleton = () => (
 );
 
 const DashboardPage = () => {
+    const { colorScheme } = useMantineColorScheme();
+    const theme = useMantineTheme();
+    const isDark = colorScheme === 'dark';
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -223,12 +228,18 @@ const DashboardPage = () => {
                                                 top: 20,
                                                 left: 20,
                                                 zIndex: 10,
-                                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                                backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                                                 padding: '12px 16px',
                                                 borderRadius: '8px',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                                                boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
                                             }}>
-                                                <div style={{ fontSize: '24px', fontWeight: 700 }}>
+                                                <div style={{ 
+                                                    fontSize: '24px', 
+                                                    fontWeight: 700,
+                                                    color: isDark ? '#fff' : '#111827'
+                                                }}>
                                                     {formatCurrency(totals.totalValue, baseCurrency)}
                                                 </div>
                                                 <div style={{
