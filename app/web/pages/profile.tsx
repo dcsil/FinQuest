@@ -35,14 +35,14 @@ const ProfileField = ({ label, value, icon }: ProfileFieldProps) => {
     const theme = useMantineTheme();
     const { colorScheme } = useMantineColorScheme();
     const isDark = colorScheme === 'dark';
-    
+
     if (value === undefined || value === null || value === '') {
         return null;
     }
 
     return (
-        <Group gap="md" p="md" style={{ 
-            borderRadius: '8px', 
+        <Group gap="md" p="md" style={{
+            borderRadius: '8px',
             backgroundColor: isDark ? theme.colors.dark[7] : theme.colors.gray[0],
             border: `1px solid ${isDark ? theme.colors.dark[5] : theme.colors.gray[2]}`,
         }}>
@@ -173,6 +173,11 @@ const ProfilePage = () => {
                                 </Group>
                             </Paper>
 
+                            {/* Badges Section */}
+                            <Paper shadow="sm" p="lg" radius="md" withBorder>
+                                <BadgesGrid />
+                            </Paper>
+
                             {/* Financial Profile Card */}
                             <Paper shadow="sm" p="lg" radius="md" withBorder>
                                 <Title order={2} mb="lg">
@@ -223,11 +228,6 @@ const ProfilePage = () => {
                                         )}
                                     </Stack>
                                 )}
-                            </Paper>
-
-                            {/* Badges Section */}
-                            <Paper shadow="sm" p="lg" radius="md" withBorder>
-                                <BadgesGrid />
                             </Paper>
                         </Stack>
                     </Container>
