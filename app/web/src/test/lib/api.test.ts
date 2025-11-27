@@ -127,7 +127,7 @@ describe('API Client', () => {
                 expect.stringContaining('/api/v1/users/financial-profile'),
                 expect.objectContaining({
                     method: 'POST',
-                    body: JSON.stringify({ risk_tolerance: 'aggressive' }),
+                    body: JSON.stringify({ riskTolerance: 'aggressive' }),
                 })
             )
         })
