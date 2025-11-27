@@ -2,11 +2,11 @@
 Learning modules endpoints
 """
 from uuid import UUID
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from ..auth_utils import get_current_user
 from ..db.models import User, Module, ModuleVersion, ModuleQuestion, ModuleChoice, ModuleAttempt, ModuleCompletion, Suggestion
-from ..db.session import get_session
+from ..db.session import get_session, SessionLocal, get_engine
 from ..schemas import (
     ModuleContent, 
     ModuleQuestion as SchemaModuleQuestion, 
@@ -14,16 +14,43 @@ from ..schemas import (
     ModuleAttemptRequest,
     ModuleAttemptResponse
 )
+from ..services.llm.service import LLMService
+from ..services.module_generator import ModuleGenerator
+from ..services.suggestion_generator import SuggestionGenerator
+from ..config import settings
 
 router = APIRouter()
+
+# Dependency for SuggestionGenerator
+def get_suggestion_generator():
+    llm_service = LLMService(settings.llm)
+    module_generator = ModuleGenerator(llm_service)
+    return SuggestionGenerator(llm_service, module_generator)
+
+async def generate_suggestions_task(
+    suggestion_generator: SuggestionGenerator,
+    user_id: str
+):
+    """Background task to generate suggestions"""
+    db = SessionLocal(bind=get_engine())
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            await suggestion_generator.generate_suggestions_for_user(db, user)
+    except Exception as e:
+        print(f"Error generating suggestions in background: {e}")
+    finally:
+        db.close()
 
 
 @router.post("/{module_id}/attempt", response_model=ModuleAttemptResponse)
 async def submit_module_attempt(
     module_id: str,
     attempt: ModuleAttemptRequest,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_session),
+    suggestion_generator: SuggestionGenerator = Depends(get_suggestion_generator),
 ):
     """
     Record a quiz attempt and mark module as completed if passed.
@@ -71,6 +98,27 @@ async def submit_module_attempt(
                 if suggestion:
                     suggestion.status = "completed"
                     db.add(suggestion)
+                
+                # Check if all existing modules are now completed
+                # If so, trigger generation of more modules
+                all_suggestions = db.query(Suggestion).filter(
+                    Suggestion.user_id == user.id,
+                    Suggestion.status.in_(["shown", "completed"])
+                ).all()
+                
+                # Check if all suggestions are completed
+                all_completed = all(
+                    s.status == "completed" 
+                    for s in all_suggestions
+                ) if all_suggestions else False
+                
+                # If all modules are completed, generate more
+                if all_completed and len(all_suggestions) > 0:
+                    background_tasks.add_task(
+                        generate_suggestions_task, 
+                        suggestion_generator, 
+                        str(user.id)
+                    )
         
         db.commit()
         

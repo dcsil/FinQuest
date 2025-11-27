@@ -328,6 +328,65 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                         </Box>
                     );
                 })}
+
+                {/* Dashed line and message at the end */}
+                {sortedSuggestions.length > 0 && (
+                    <Box style={{ position: 'relative', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
+                        {/* Dashed connecting line */}
+                        <Box
+                            style={{
+                                position: 'relative',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: '4px',
+                                height: '80px',
+                                marginTop: 0,
+                                marginBottom: 0,
+                                border: `2px dashed ${isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)'}`,
+                                background: 'transparent',
+                                zIndex: 1,
+                                borderRadius: '2px',
+                                pointerEvents: 'none',
+                            }}
+                        />
+
+                        {/* Message card */}
+                        <Card
+                            shadow="sm"
+                            padding="lg"
+                            radius="md"
+                            withBorder
+                            style={{
+                                position: 'relative',
+                                zIndex: 2,
+                                marginTop: '20px',
+                                backgroundColor: isDark ? theme.colors.dark[6] : '#f8f9fa',
+                                borderStyle: 'dashed',
+                                borderWidth: '2px',
+                                borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
+                            }}
+                        >
+                            <Stack gap="sm" align="center">
+                                <ThemeIcon
+                                    color="gray"
+                                    variant="light"
+                                    size="lg"
+                                    radius="md"
+                                >
+                                    <IconBook size={20} />
+                                </ThemeIcon>
+                                <Text
+                                    size="sm"
+                                    c={isDark ? theme.colors.dark[2] : theme.colors.gray[7]}
+                                    ta="center"
+                                    style={{ lineHeight: 1.6 }}
+                                >
+                                    More modules will be generated automatically after you complete the existing ones.
+                                </Text>
+                            </Stack>
+                        </Card>
+                    </Box>
+                )}
             </Stack>
         </Box>
     );
