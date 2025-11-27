@@ -2,6 +2,7 @@ import { Card, Text, Button, Badge, Group, ThemeIcon, Stack, Box } from "@mantin
 import { IconBook, IconChartBar, IconAlertTriangle, IconArrowRight, IconCheck } from "@tabler/icons-react";
 import type { Suggestion } from "@/types/learning";
 import { useRouter } from "next/router";
+import { useState, useEffect, useRef } from "react";
 
 interface LearningPathwayProps {
     suggestions: Suggestion[];
@@ -58,12 +59,61 @@ const toTitleCase = (str: string): string => {
 
 export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
     const router = useRouter();
+    const [backgroundPosition, setBackgroundPosition] = useState({ x: 0, y: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
+    const targetPositionRef = useRef({ x: 0, y: 0 });
+    const animationFrameRef = useRef<number | null>(null);
 
     // Keep suggestions in their original order to preserve pathway sequence
     const sortedSuggestions = [...suggestions];
 
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                // Calculate target position (subtle movement)
+                targetPositionRef.current = {
+                    x: x * 0.02,
+                    y: y * 0.02,
+                };
+            }
+        };
+
+        const animate = () => {
+            // Smooth interpolation towards target position
+            const currentX = backgroundPosition.x;
+            const currentY = backgroundPosition.y;
+            const targetX = targetPositionRef.current.x;
+            const targetY = targetPositionRef.current.y;
+
+            // Easing factor (0.1 = smooth, higher = faster)
+            const easing = 0.1;
+            const newX = currentX + (targetX - currentX) * easing;
+            const newY = currentY + (targetY - currentY) * easing;
+
+            setBackgroundPosition({ x: newX, y: newY });
+            animationFrameRef.current = requestAnimationFrame(animate);
+        };
+
+        const container = containerRef.current;
+        if (container) {
+            container.addEventListener('mousemove', handleMouseMove);
+            animationFrameRef.current = requestAnimationFrame(animate);
+
+            return () => {
+                container.removeEventListener('mousemove', handleMouseMove);
+                if (animationFrameRef.current) {
+                    cancelAnimationFrame(animationFrameRef.current);
+                }
+            };
+        }
+    }, [backgroundPosition.x, backgroundPosition.y]);
+
     return (
         <Box
+            ref={containerRef}
             style={{
                 position: 'relative',
                 padding: '2rem 0',
@@ -72,7 +122,7 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                     linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
                 `,
                 backgroundSize: '20px 20px',
-                backgroundPosition: '0 0',
+                backgroundPosition: `${backgroundPosition.x}px ${backgroundPosition.y}px`,
             }}
         >
             <Stack gap={0} align="center">
