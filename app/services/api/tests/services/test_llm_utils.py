@@ -1,8 +1,7 @@
 """
 Tests for LLM utils
 """
-import pytest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from finquest_api.services.llm.utils import get_gemini_compatible_schema, _dereference_schema
 
 

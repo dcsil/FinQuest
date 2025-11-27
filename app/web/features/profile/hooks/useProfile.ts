@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { usersApi } from '@/lib/api';
 import type { UserProfile } from '@/types/user';
 

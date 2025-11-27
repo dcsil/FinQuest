@@ -1,12 +1,11 @@
 """
 Extended tests for FX service
 """
-import pytest
 from unittest.mock import Mock, MagicMock, patch
 from decimal import Decimal
 from datetime import datetime, timedelta, timezone
 
-from finquest_api.services.fx import fx_now, fx_at, convert_to_base
+from finquest_api.services.fx import fx_at, convert_to_base
 from finquest_api.db.models import FxRateSnapshot
 
 

@@ -2,7 +2,7 @@
 Tests for health check endpoints
 """
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from sqlalchemy.exc import SQLAlchemyError
 
 from finquest_api.routers.health import health_check, readiness_check

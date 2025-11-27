@@ -44,13 +44,11 @@ const ColorSchemeToggle = () => {
 const Home = () => {
     const { user, loading } = useAuth();
     const router = useRouter();
-    const [checkingOnboarding, setCheckingOnboarding] = useState(false);
 
     useEffect(() => {
         const checkOnboardingAndRedirect = async () => {
             // If user is authenticated, check onboarding status and redirect accordingly
             if (!loading && user) {
-                setCheckingOnboarding(true);
                 try {
                     const { completed } = await usersApi.getOnboardingStatus();
                     if (completed) {
@@ -62,8 +60,6 @@ const Home = () => {
                     // If there's an error checking onboarding status, default to onboarding
                     console.error("Error checking onboarding status:", error);
                     router.push('/onboarding');
-                } finally {
-                    setCheckingOnboarding(false);
                 }
             }
         };

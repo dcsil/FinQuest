@@ -72,7 +72,7 @@ describe('Login Page', () => {
     it('displays error message when login fails', async () => {
         const user = userEvent.setup()
         vi.mocked(mockAuthContext.signIn).mockResolvedValue({
-            error: { message: 'Invalid credentials' } as any,
+            error: { message: 'Invalid credentials' } as unknown as { message: string },
         })
         render(<Login />)
         const emailInput = screen.getByLabelText(/email/i)
@@ -100,7 +100,7 @@ describe('Login Page', () => {
     it('displays error message when Google sign in fails', async () => {
         const user = userEvent.setup()
         vi.mocked(mockAuthContext.signInWithGoogle).mockResolvedValue({
-            error: { message: 'Google sign in failed' } as any,
+            error: { message: 'Google sign in failed' } as unknown as { message: string },
         })
         render(<Login />)
         const googleButton = screen.getByRole('button', { name: /continue with google/i })
@@ -112,11 +112,11 @@ describe('Login Page', () => {
 
     it('shows loading state during sign in', async () => {
         const user = userEvent.setup()
-        let resolveSignIn: (value: any) => void
-        const signInPromise = new Promise(resolve => {
+        let resolveSignIn: (value: { error: null } | { error: { message: string } }) => void
+        const signInPromise = new Promise<{ error: null } | { error: { message: string } }>(resolve => {
             resolveSignIn = resolve
         })
-        vi.mocked(mockAuthContext.signIn).mockReturnValue(signInPromise as any)
+        vi.mocked(mockAuthContext.signIn).mockReturnValue(signInPromise)
         render(<Login />)
         const emailInput = screen.getByLabelText(/email/i)
         const passwordInput = screen.getByLabelText(/password/i)

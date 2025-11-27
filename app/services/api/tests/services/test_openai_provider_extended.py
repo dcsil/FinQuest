@@ -2,9 +2,7 @@
 Extended tests for OpenAI provider to cover missing lines
 """
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 from pydantic import SecretStr
-import json
 
 from finquest_api.services.llm.providers.openai import OpenAIChatClient
 from finquest_api.services.llm.models import LLMCompletionRequest, LLMMessage, StructuredOutputConfig

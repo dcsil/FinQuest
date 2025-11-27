@@ -3,8 +3,7 @@ Gamification service for XP, levels, streaks, and badges.
 """
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
-from typing import Optional
+from datetime import date, timedelta
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -252,7 +251,6 @@ def get_portfolio_position_count(db: Session, user_id: UUID) -> int:
     
     # Count distinct instruments in transactions
     from sqlalchemy import distinct
-    from ..db.models import Transaction
     
     count = db.query(distinct(Transaction.instrument_id)).filter(
         Transaction.portfolio_id == portfolio.id,

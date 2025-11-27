@@ -24,7 +24,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
 import { AddPositionDialog } from '@/components/AddPositionDialog';
 import { AllocationChart } from '@/components/AllocationChart';
-import { ValueChart, type TimeRange } from '@/components/ValueChart';
+import { ValueChart } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
 import { usersApi } from '@/lib/api';
 import type { Suggestion } from '@/types/learning';

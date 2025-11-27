@@ -220,7 +220,7 @@ class TestGetPrevClose:
         mock_instrument.id = instrument_id
         mock_instrument.symbol = "AAPL"
         
-        yesterday = date.today() - timedelta(days=1)
+        date.today() - timedelta(days=1)
         mock_eod = Mock(spec=InstrumentPriceEOD)
         mock_eod.close = Decimal("155.0")
         

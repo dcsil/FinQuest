@@ -2,9 +2,7 @@
 Extended tests for Gemini provider to cover missing lines
 """
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 from pydantic import SecretStr
-import json
 
 from finquest_api.services.llm.providers.gemini import GeminiChatClient
 from finquest_api.services.llm.client_base import ProviderRequestError

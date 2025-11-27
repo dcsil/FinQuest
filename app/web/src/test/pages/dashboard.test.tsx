@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../test-utils'
 import DashboardPage from '@/pages/dashboard'
 import { portfolioApi, usersApi } from '@/lib/api'
-import { AuthProvider } from '@/contexts/AuthContext'
-import { GamificationProvider } from '@/contexts/GamificationContext'
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio'
 import type { Suggestion } from '@/types/learning'
 
@@ -58,7 +56,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 const mockPortfolio: PortfolioHoldingsResponse = {
-    holdings: [],
+    positions: [],
     totals: {
         totalValue: 10000,
         totalCostBasis: 9000,
@@ -66,6 +64,10 @@ const mockPortfolio: PortfolioHoldingsResponse = {
         dailyPL: 100,
     },
     baseCurrency: 'USD',
+    allocationByType: {},
+    allocationBySector: {},
+    bestMovers: [],
+    worstMovers: [],
 }
 
 const mockSnapshots: SnapshotPoint[] = [
@@ -80,6 +82,7 @@ const mockSuggestions: Suggestion[] = [
         reason: 'Test suggestion',
         confidence: 0.8,
         status: 'pending',
+        metadata: null,
     },
 ]
 
@@ -87,7 +90,7 @@ describe('Dashboard Page', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(portfolioApi.getPortfolio).mockResolvedValue(mockPortfolio)
-        vi.mocked(portfolioApi.getSnapshots).mockResolvedValue({ series: mockSnapshots })
+        vi.mocked(portfolioApi.getSnapshots).mockResolvedValue({ series: mockSnapshots, baseCurrency: 'USD' })
         vi.mocked(usersApi.getSuggestions).mockResolvedValue(mockSuggestions)
     })
 

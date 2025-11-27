@@ -1,7 +1,6 @@
 """
 Tests for gamification service functions
 """
-import pytest
 from unittest.mock import Mock, MagicMock, patch
 from uuid import uuid4
 from datetime import date, timedelta
@@ -14,16 +13,12 @@ from finquest_api.services.gamification import (
     evaluate_badges,
     check_module_first_time,
     get_portfolio_position_count,
-    XP_REWARDS,
-    LEVEL_THRESHOLDS,
 )
 from finquest_api.db.models import (
     UserGamificationStats,
     BadgeDefinition,
-    UserBadge,
     ModuleCompletion,
     Portfolio,
-    Transaction,
 )
 
 
@@ -93,7 +88,7 @@ class TestGetOrCreateStats:
         new_stats = Mock(spec=UserGamificationStats)
         with patch('finquest_api.services.gamification.UserGamificationStats', return_value=new_stats):
             user_id = uuid4()
-            result = get_or_create_stats(mock_db, user_id)
+            get_or_create_stats(mock_db, user_id)
             
             mock_db.add.assert_called_once()
             mock_db.commit.assert_called_once()

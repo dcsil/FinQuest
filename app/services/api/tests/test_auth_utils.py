@@ -115,7 +115,7 @@ class TestGetCurrentUser:
         mock_db.refresh.return_value = None
         
         with patch('finquest_api.auth_utils.User', return_value=new_user):
-            user = await get_current_user(mock_token_payload, mock_db)
+            await get_current_user(mock_token_payload, mock_db)
         
         mock_db.add.assert_called_once()
         mock_db.commit.assert_called_once()

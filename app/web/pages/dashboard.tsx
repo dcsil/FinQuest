@@ -11,14 +11,11 @@ import {
     AppShell,
     Skeleton,
     useMantineColorScheme,
-    useMantineTheme,
 } from '@mantine/core';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppNav } from '@/components/AppNav';
 import { ValueChart, type TimeRange } from '@/components/ValueChart';
 import { SuggestionsWidget } from '@/components/SuggestionsWidget';
-import { XPBar } from '@/components/XPBar';
-import { StreakIndicator } from '@/components/StreakIndicator';
 import { GamificationEngagement } from '@/components/GamificationEngagement';
 import { portfolioApi, usersApi } from '@/lib/api';
 import type { PortfolioHoldingsResponse, SnapshotPoint } from '@/types/portfolio';
@@ -51,7 +48,6 @@ const DashboardSkeleton = () => (
 
 const DashboardPage = () => {
     const { colorScheme } = useMantineColorScheme();
-    const theme = useMantineTheme();
     const isDark = colorScheme === 'dark';
     const [portfolio, setPortfolio] = useState<PortfolioHoldingsResponse | null>(null);
     const [snapshots, setSnapshots] = useState<SnapshotPoint[]>([]);

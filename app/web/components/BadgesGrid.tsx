@@ -2,7 +2,7 @@
  * Badges Grid Component for Profile Page
  */
 import { useEffect, useState } from 'react';
-import { Grid, Card, Text, Badge, Stack, Title, Group } from '@mantine/core';
+import { Grid, Card, Text, Badge, Stack, Title } from '@mantine/core';
 import { gamificationApi, type BadgeDefinitionResponse } from '@/lib/api';
 
 export const BadgesGrid = () => {

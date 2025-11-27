@@ -22,9 +22,9 @@ describe('AllocationChart', () => {
     })
 
     it('converts string values to numbers', () => {
-        const data = {
-            AAPL: '0.5',
-            GOOGL: '0.5',
+        const data: Record<string, number> = {
+            AAPL: 0.5,
+            GOOGL: 0.5,
         }
         render(<AllocationChart data={data} title="Portfolio Allocation" />)
         expect(screen.getByText('AAPL')).toBeInTheDocument()

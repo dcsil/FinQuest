@@ -27,7 +27,7 @@ describe('useProfile', () => {
             age: 25,
             riskTolerance: 'Moderate',
         }
-        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(mockProfile as any)
+        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(mockProfile as unknown as Awaited<ReturnType<typeof usersApi.getFinancialProfile>>)
         const { result } = renderHook(() => useProfile())
         await result.current.loadProfile()
         await waitFor(() => {
@@ -47,8 +47,8 @@ describe('useProfile', () => {
 
     it('updates profile successfully', async () => {
         const initialProfile = { age: 25, riskTolerance: 'Moderate' }
-        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(initialProfile as any)
-        vi.mocked(usersApi.updateFinancialProfile).mockResolvedValue({ success: true } as any)
+        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(initialProfile as unknown as Awaited<ReturnType<typeof usersApi.getFinancialProfile>>)
+        vi.mocked(usersApi.updateFinancialProfile).mockResolvedValue({ success: true } as unknown as Awaited<ReturnType<typeof usersApi.updateFinancialProfile>>)
         const { result } = renderHook(() => useProfile())
         await result.current.loadProfile()
         await waitFor(() => {
@@ -69,14 +69,14 @@ describe('useProfile', () => {
     it('handles update errors', async () => {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         const mockProfile = { age: 25 }
-        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(mockProfile as any)
+        vi.mocked(usersApi.getFinancialProfile).mockResolvedValue(mockProfile as unknown as Awaited<ReturnType<typeof usersApi.getFinancialProfile>>)
         vi.mocked(usersApi.updateFinancialProfile).mockRejectedValue(new Error('Update Error'))
         const { result } = renderHook(() => useProfile())
         await result.current.loadProfile()
         await act(async () => {
             try {
                 await result.current.updateProfile({ age: 30 })
-            } catch (err) {
+            } catch {
                 // Expected to throw
             }
         })

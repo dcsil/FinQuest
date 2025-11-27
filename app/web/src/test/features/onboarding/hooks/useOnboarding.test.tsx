@@ -65,7 +65,7 @@ describe('useOnboarding', () => {
     })
 
     it('completes onboarding on last step', async () => {
-        vi.mocked(usersApi.updateFinancialProfile).mockResolvedValue({ success: true } as any)
+        vi.mocked(usersApi.updateFinancialProfile).mockResolvedValue({ success: true } as unknown as Awaited<ReturnType<typeof usersApi.updateFinancialProfile>>)
         const { result } = renderHook(() => useOnboarding())
         act(() => {
             result.current.updateData({ financialGoals: 'Saving for retirement' })

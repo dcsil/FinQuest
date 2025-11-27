@@ -23,6 +23,7 @@ describe('SuggestionsWidget', () => {
                 reason: 'Test reason',
                 confidence: 0.8,
                 status: 'completed',
+                metadata: null,
             },
         ]
         const { container } = render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
@@ -38,6 +39,7 @@ describe('SuggestionsWidget', () => {
                 reason: 'Test reason 1',
                 confidence: 0.8,
                 status: 'pending',
+                metadata: null,
             },
             {
                 id: '2',
@@ -45,6 +47,7 @@ describe('SuggestionsWidget', () => {
                 reason: 'Test reason 2',
                 confidence: 0.6,
                 status: 'pending',
+                metadata: null,
             },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
@@ -55,10 +58,10 @@ describe('SuggestionsWidget', () => {
 
     it('shows only top 3 suggestions', () => {
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'Reason 1', confidence: 0.8, status: 'pending' },
-            { id: '2', moduleId: 'module-2', reason: 'Reason 2', confidence: 0.7, status: 'pending' },
-            { id: '3', moduleId: 'module-3', reason: 'Reason 3', confidence: 0.6, status: 'pending' },
-            { id: '4', moduleId: 'module-4', reason: 'Reason 4', confidence: 0.5, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'Reason 1', confidence: 0.8, status: 'pending', metadata: null },
+            { id: '2', moduleId: 'module-2', reason: 'Reason 2', confidence: 0.7, status: 'pending', metadata: null },
+            { id: '3', moduleId: 'module-3', reason: 'Reason 3', confidence: 0.6, status: 'pending', metadata: null },
+            { id: '4', moduleId: 'module-4', reason: 'Reason 4', confidence: 0.5, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         expect(screen.getByText('Reason 1')).toBeInTheDocument()
@@ -69,8 +72,8 @@ describe('SuggestionsWidget', () => {
 
     it('filters out completed suggestions', () => {
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'Pending', confidence: 0.8, status: 'pending' },
-            { id: '2', moduleId: 'module-2', reason: 'Completed', confidence: 0.7, status: 'completed' },
+            { id: '1', moduleId: 'module-1', reason: 'Pending', confidence: 0.8, status: 'pending', metadata: null },
+            { id: '2', moduleId: 'module-2', reason: 'Completed', confidence: 0.7, status: 'completed', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         expect(screen.getByText('Pending')).toBeInTheDocument()
@@ -79,9 +82,9 @@ describe('SuggestionsWidget', () => {
 
     it('displays confidence badges correctly', () => {
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'High', confidence: 0.9, status: 'pending' },
-            { id: '2', moduleId: 'module-2', reason: 'Medium', confidence: 0.6, status: 'pending' },
-            { id: '3', moduleId: 'module-3', reason: 'Low', confidence: 0.3, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'High', confidence: 0.9, status: 'pending', metadata: null },
+            { id: '2', moduleId: 'module-2', reason: 'Medium', confidence: 0.6, status: 'pending', metadata: null },
+            { id: '3', moduleId: 'module-3', reason: 'Low', confidence: 0.3, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         expect(screen.getByText('High Match')).toBeInTheDocument()
@@ -91,7 +94,7 @@ describe('SuggestionsWidget', () => {
 
     it('displays Match badge when confidence is null', () => {
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'No confidence', confidence: null, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'No confidence', confidence: null, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         // Badge might not render if confidence is null, check if component renders
@@ -101,7 +104,7 @@ describe('SuggestionsWidget', () => {
     it('navigates to learn page when View All is clicked', async () => {
         const user = userEvent.setup()
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         const button = screen.getByRole('button', { name: /view all/i })
@@ -112,7 +115,7 @@ describe('SuggestionsWidget', () => {
     it('navigates to module page when Start Module is clicked', async () => {
         const user = userEvent.setup()
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         const button = screen.getByRole('button', { name: /start module/i })
@@ -152,7 +155,7 @@ describe('SuggestionsWidget', () => {
 
     it('displays default topic when metadata is missing', () => {
         const suggestions: Suggestion[] = [
-            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending' },
+            { id: '1', moduleId: 'module-1', reason: 'Test', confidence: 0.8, status: 'pending', metadata: null },
         ]
         render(<SuggestionsWidget suggestions={suggestions} loading={false} />)
         expect(screen.getByText('General')).toBeInTheDocument()

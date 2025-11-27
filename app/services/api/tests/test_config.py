@@ -1,7 +1,6 @@
 """
 Tests for configuration settings
 """
-import pytest
 from pydantic import SecretStr
 from finquest_api.config import Settings, LLMSettings
 

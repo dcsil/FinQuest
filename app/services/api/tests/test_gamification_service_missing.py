@@ -1,7 +1,6 @@
 """
 Tests for missing lines in gamification service
 """
-import pytest
 from unittest.mock import Mock, MagicMock
 from uuid import uuid4
 
@@ -9,7 +8,7 @@ from finquest_api.services.gamification import (
     get_xp_to_next_level,
     evaluate_badges,
 )
-from finquest_api.db.models import UserGamificationStats, BadgeDefinition, UserBadge
+from finquest_api.db.models import UserGamificationStats, BadgeDefinition
 
 
 class TestGetXpToNextLevelMissing:

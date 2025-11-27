@@ -2,7 +2,6 @@
 Tests for LLM dependencies
 """
 import pytest
-from unittest.mock import patch, MagicMock
 from finquest_api.services.llm.dependencies import get_llm_service, _singleton_llm_service
 from finquest_api.services.llm.service import LLMService
 

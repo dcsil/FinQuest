@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from finquest_api.routers.modules import get_suggestion_generator, generate_suggestions_task
 from finquest_api.db.models import User
-from finquest_api.config import settings
 
 
 class TestModuleDependencies:

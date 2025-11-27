@@ -25,7 +25,7 @@ describe('useSnapshots', () => {
         const mockSnapshots = [
             { asOf: '2024-01-01T00:00:00Z', totalValue: 10000 },
         ]
-        vi.mocked(portfolioApi.getSnapshots).mockResolvedValue({ series: mockSnapshots } as any)
+        vi.mocked(portfolioApi.getSnapshots).mockResolvedValue({ series: mockSnapshots } as unknown as Awaited<ReturnType<typeof portfolioApi.getSnapshots>>)
         const { result } = renderHook(() => useSnapshots())
         await act(async () => {
             await result.current.loadSnapshots()

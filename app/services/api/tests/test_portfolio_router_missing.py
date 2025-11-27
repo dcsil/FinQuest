@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from uuid import uuid4
 from decimal import Decimal
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 from finquest_api.routers.portfolio import add_position, get_snapshots
 from finquest_api.db.models import User, Portfolio, PortfolioValuationSnapshot

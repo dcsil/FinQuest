@@ -11,7 +11,6 @@ from finquest_api.routers.auth import SignUpRequest
 @pytest.fixture
 def mock_supabase(monkeypatch):
     """Replace Supabase client with a MagicMock"""
-    from unittest.mock import MagicMock
     mock_client = MagicMock()
     monkeypatch.setattr("finquest_api.supabase_client.supabase", mock_client)
     monkeypatch.setattr("finquest_api.routers.auth.supabase", mock_client)

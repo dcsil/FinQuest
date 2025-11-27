@@ -8,7 +8,7 @@ describe('User Utils', () => {
             const user = {
                 user_metadata: { full_name: 'John Doe' },
                 email: 'john@example.com',
-            } as User
+            } as unknown as User
             expect(getUserDisplayName(user)).toBe('John Doe')
         })
 
@@ -37,7 +37,7 @@ describe('User Utils', () => {
         it('returns uppercase initial from full name', () => {
             const user = {
                 user_metadata: { full_name: 'John Doe' },
-            } as User
+            } as unknown as User
             expect(getUserInitial(user)).toBe('J')
         })
 

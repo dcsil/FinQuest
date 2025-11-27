@@ -2,7 +2,7 @@
 Additional tests for authentication router endpoints
 """
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock
 
 from finquest_api.routers.auth import (
     sign_up, sign_in, sign_out, refresh_token, get_me, google_sign_in

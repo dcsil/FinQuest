@@ -67,7 +67,7 @@ describe('ValueChart', () => {
         const stringData: SnapshotPoint[] = [
             {
                 asOf: '2024-01-01T00:00:00Z',
-                totalValue: '10000',
+                totalValue: 10000,
             },
         ]
         render(<ValueChart data={stringData} baseCurrency="USD" />)

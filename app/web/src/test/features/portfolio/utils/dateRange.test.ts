@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { getDateRange } from '@/features/portfolio/utils/dateRange'
-import { subDays, startOfYear } from 'date-fns'
+import { startOfYear } from 'date-fns'
 
 describe('getDateRange', () => {
     it('returns correct range for 1d', () => {
@@ -33,7 +33,7 @@ describe('getDateRange', () => {
     })
 
     it('returns default range for invalid input', () => {
-        const result = getDateRange('invalid' as any)
+        const result = getDateRange('invalid' as '1d' | '1w' | '1m' | 'ytd' | '1y')
         expect(result.granularity).toBe('daily')
     })
 

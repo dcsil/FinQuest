@@ -19,7 +19,7 @@ describe('Profile Formatters', () => {
 
         it('returns undefined for null/undefined', () => {
             expect(formatExperience(undefined)).toBeUndefined()
-            expect(formatExperience(null as any)).toBeUndefined()
+            expect(formatExperience(null as unknown as number)).toBeUndefined()
         })
     })
 

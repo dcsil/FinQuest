@@ -86,10 +86,9 @@ describe('AddPositionDialog', () => {
     it('submits form successfully', async () => {
         const user = userEvent.setup()
         vi.mocked(portfolioApi.addPosition).mockResolvedValue({
-            id: '123',
-            symbol: 'AAPL',
-            quantity: 10,
-            avgCost: 180,
+            status: 'success',
+            portfolioId: '123',
+            transactionIds: ['tx-1'],
         })
         render(<AddPositionDialog opened={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />)
         const symbolInput = screen.getByLabelText(/ticker symbol/i)

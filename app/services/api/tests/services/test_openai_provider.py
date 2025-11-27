@@ -2,7 +2,6 @@
 Tests for OpenAI provider
 """
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
 from pydantic import SecretStr
 
 from finquest_api.services.llm.providers.openai import OpenAIChatClient

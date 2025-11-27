@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../test-utils'
 import { GamificationProvider, useGamification } from '@/contexts/GamificationContext'
 import { gamificationApi } from '@/lib/api'
-import type { GamificationStateResponse, BadgeInfo } from '@/lib/api'
+import type { GamificationStateResponse } from '@/lib/api'
 
 const mockAuthContext = {
     user: { id: '1', email: 'test@example.com' },
@@ -49,7 +49,7 @@ describe('GamificationContext', () => {
     })
 
     it('provides default state when user is not authenticated', async () => {
-        mockAuthContext.user = null
+        mockAuthContext.user = null as unknown as { id: string; email: string }
         render(
             <GamificationProvider>
                 <TestComponent />

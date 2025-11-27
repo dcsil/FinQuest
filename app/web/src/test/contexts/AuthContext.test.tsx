@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { mockRouter } from '../test-utils'
 
 const TestComponent = () => {
-    const { user, session, loading, signUp, signIn, signInWithGoogle, signOut } = useAuth()
+    const { user, loading, signUp, signIn, signInWithGoogle, signOut } = useAuth()
     return (
         <div>
             <div data-testid="user">{user?.email || 'null'}</div>
@@ -41,7 +41,7 @@ describe('AuthContext', () => {
         })
         vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
             data: { subscription: { unsubscribe: vi.fn() } },
-        } as any)
+        } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
     })
 
     it('provides initial state', async () => {
@@ -86,9 +86,18 @@ describe('AuthContext', () => {
 
     it('handles sign in', async () => {
         vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
-            data: { user: { id: '1', email: 'test@example.com' } as any, session: null },
+            data: {
+                user: { id: '1', email: 'test@example.com' } as unknown as { id: string; email: string },
+                session: {
+                    access_token: 'token',
+                    refresh_token: 'refresh',
+                    expires_in: 3600,
+                    token_type: 'bearer',
+                    user: { id: '1', email: 'test@example.com' } as unknown as { id: string; email: string },
+                } as unknown as { access_token: string; refresh_token: string; expires_in: number; token_type: string; user: { id: string; email: string } },
+            },
             error: null,
-        })
+        } as unknown as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>)
         render(
             <AuthProvider>
                 <TestComponent />
@@ -152,14 +161,14 @@ describe('AuthContext', () => {
     })
 
     it('updates state on auth change', async () => {
-        let authChangeCallback: (event: string, session: any) => void
+        let authChangeCallback: (event: 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED' | 'PASSWORD_RECOVERY', session: { user: { id: string; email: string } } | null) => void
         vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
-            authChangeCallback = callback
+            authChangeCallback = callback as typeof authChangeCallback
             return {
                 data: { subscription: { unsubscribe: vi.fn() } },
-            } as any
+            } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>
         })
-        const { rerender } = render(
+        render(
             <AuthProvider>
                 <TestComponent />
             </AuthProvider>
@@ -168,7 +177,7 @@ describe('AuthContext', () => {
             expect(screen.getByTestId('loading')).toHaveTextContent('loaded')
         })
         const mockUser = { id: '1', email: 'test@example.com' }
-        const mockSession = { user: mockUser } as any
+        const mockSession = { user: mockUser } as unknown as { user: { id: string; email: string } }
         // Use act to wrap state updates
         await act(async () => {
             authChangeCallback!('SIGNED_IN', mockSession)
@@ -179,7 +188,7 @@ describe('AuthContext', () => {
     })
 
     it('throws error when used outside provider', () => {
-        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => { })
         expect(() => {
             render(<TestComponent />)
         }).toThrow()

@@ -27,7 +27,7 @@ describe('usePortfolio', () => {
             totals: { totalValue: 10000, totalCostBasis: 9000, unrealizedPL: 1000, dailyPL: 100 },
             baseCurrency: 'USD',
         }
-        vi.mocked(portfolioApi.getPortfolio).mockResolvedValue(mockPortfolio as any)
+        vi.mocked(portfolioApi.getPortfolio).mockResolvedValue(mockPortfolio as unknown as Awaited<ReturnType<typeof portfolioApi.getPortfolio>>)
         const { result } = renderHook(() => usePortfolio())
         await result.current.loadPortfolio()
         await waitFor(() => {

@@ -25,20 +25,6 @@ export const useOnboarding = () => {
         setData(prev => ({ ...prev, ...updates }));
     }, []);
 
-    const handleNext = useCallback(() => {
-        if (currentStep < TOTAL_STEPS) {
-            setCurrentStep(prev => prev + 1);
-        } else {
-            handleComplete();
-        }
-    }, [currentStep]);
-
-    const handlePrevious = useCallback(() => {
-        if (currentStep > 1) {
-            setCurrentStep(prev => prev - 1);
-        }
-    }, [currentStep]);
-
     const handleComplete = useCallback(async () => {
         setLoading(true);
         try {
@@ -51,6 +37,20 @@ export const useOnboarding = () => {
             alert("Failed to save onboarding data. Please try again.");
         }
     }, [data, router]);
+
+    const handleNext = useCallback(() => {
+        if (currentStep < TOTAL_STEPS) {
+            setCurrentStep(prev => prev + 1);
+        } else {
+            handleComplete();
+        }
+    }, [currentStep, handleComplete]);
+
+    const handlePrevious = useCallback(() => {
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1);
+        }
+    }, [currentStep]);
 
     const canProceed = validateStep(currentStep, data);
     const isFirstStep = currentStep === 1;

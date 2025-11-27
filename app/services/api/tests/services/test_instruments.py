@@ -12,7 +12,6 @@ from finquest_api.services.instruments import (
     get_provider,
     ensure_instrument,
     ResolvedInstrument,
-    LatestPrice,
 )
 from finquest_api.db.models import Instrument
 

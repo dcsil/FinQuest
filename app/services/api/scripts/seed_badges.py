@@ -2,7 +2,6 @@
 Seed badge definitions into the database.
 """
 import sys
-import os
 from pathlib import Path
 
 # Add parent directory to path
@@ -151,7 +150,7 @@ def seed_badges():
             added_count += 1
         
         db.commit()
-        print(f"\n✅ Successfully seeded badge definitions!")
+        print("\n✅ Successfully seeded badge definitions!")
         print(f"   Added: {added_count}, Skipped: {skipped_count}")
         
     except RuntimeError as e:

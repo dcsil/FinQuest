@@ -4,7 +4,7 @@ Extended tests for gamification router to cover missing lines
 import pytest
 from unittest.mock import Mock, MagicMock, patch
 from uuid import uuid4
-from datetime import date, datetime
+from datetime import datetime
 
 from finquest_api.routers.gamification import (
     handle_gamification_event,
@@ -97,7 +97,6 @@ class TestGamificationEventExtended:
     @pytest.mark.anyio("asyncio")
     async def test_quiz_completed_streak_not_incremented(self, mock_user, mock_stats, mock_db):
         """Test quiz completed where streak doesn't increment (line 137)"""
-        previous_streak = 5
         mock_stats.current_streak = 5  # Same as previous
         
         with patch('finquest_api.routers.gamification.get_or_create_stats', return_value=mock_stats):

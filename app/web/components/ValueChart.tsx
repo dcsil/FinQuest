@@ -281,7 +281,7 @@ export const ValueChart = ({
                             width={70}
                         />
                         <Tooltip
-                            content={({ active, payload, label }) => {
+                            content={({ active, payload }) => {
                                 if (active && payload && payload.length > 0) {
                                     const tooltipFormat = getTooltipFormat(granularity);
                                     const date = payload[0].payload.fullDate;

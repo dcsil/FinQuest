@@ -19,10 +19,14 @@ describe('API Client', () => {
             data: {
                 session: {
                     access_token: 'test-token',
-                } as any,
+                    refresh_token: 'refresh-token',
+                    expires_in: 3600,
+                    token_type: 'bearer',
+                    user: { id: '1', email: 'test@example.com' } as unknown as { id: string; email: string },
+                } as unknown as { access_token: string; refresh_token: string; expires_in: number; token_type: string; user: { id: string; email: string } },
             },
             error: null,
-        })
+        } as unknown as Awaited<ReturnType<typeof supabase.auth.getSession>>)
     })
 
     describe('portfolioApi', () => {
@@ -118,7 +122,7 @@ describe('API Client', () => {
                 ok: true,
                 json: async () => ({ success: true }),
             } as Response)
-            await usersApi.updateFinancialProfile({ risk_tolerance: 'aggressive' })
+            await usersApi.updateFinancialProfile({ riskTolerance: 'aggressive' })
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/api/v1/users/financial-profile'),
                 expect.objectContaining({
@@ -251,7 +255,7 @@ describe('API Client', () => {
                 json: async () => {
                     throw new Error('Invalid JSON')
                 },
-            } as Response)
+            } as unknown as Response)
             await expect(portfolioApi.getPortfolio()).rejects.toThrow('Internal Server Error')
         })
     })

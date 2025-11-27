@@ -2,7 +2,7 @@
  * Level Up Modal Component
  */
 import { motion, AnimatePresence } from 'framer-motion';
-import { Modal, Text, Button, Stack, Title, Group } from '@mantine/core';
+import { Modal, Text, Button, Stack, Title } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
 
 interface LevelUpModalProps {
@@ -53,7 +53,7 @@ export const LevelUpModal = ({ opened, onClose, newLevel }: LevelUpModalProps) =
                                 Level Up!
                             </Title>
                             <Text size="xl" fw={700} c={isDark ? 'blue.4' : 'blue.6'}>
-                                You've reached Level {newLevel}!
+                                You&apos;ve reached Level {newLevel}!
                             </Text>
                             <Text size="sm" c="dimmed">
                                 Keep learning and earning XP to level up even more!

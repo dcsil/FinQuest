@@ -63,7 +63,9 @@ export const AllocationChart = ({ data, title, colors = DEFAULT_COLORS }: Alloca
                         content={({ active, payload }) => {
                             if (active && payload && payload.length > 0) {
                                 const entry = payload[0];
-                                const uppercaseName = entry.name ? entry.name.toUpperCase() : '';
+                                const name = typeof entry.name === 'string' ? entry.name : String(entry.name || '');
+                                const uppercaseName = name.toUpperCase();
+                                const value = typeof entry.value === 'number' ? entry.value : Number(entry.value || 0);
                                 return (
                                     <div style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
@@ -76,7 +78,7 @@ export const AllocationChart = ({ data, title, colors = DEFAULT_COLORS }: Alloca
                                             {uppercaseName}
                                         </div>
                                         <div style={{ fontWeight: 500 }}>
-                                            {entry.value?.toFixed(2)}%
+                                            {value.toFixed(2)}%
                                         </div>
                                     </div>
                                 );

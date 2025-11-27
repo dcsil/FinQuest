@@ -2,9 +2,7 @@
 Tests for database session management
 """
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+from unittest.mock import Mock, patch
 
 from finquest_api.db.session import get_engine, get_session, session_scope, init_database
 from finquest_api.config import settings
@@ -129,7 +127,7 @@ class TestSessionScope:
         with patch('finquest_api.db.session.get_engine', return_value=mock_engine):
             with patch('finquest_api.db.session.SessionLocal', mock_sessionmaker):
                 with pytest.raises(ValueError):
-                    with session_scope() as session:
+                    with session_scope():
                         raise ValueError("Test error")
                 
                 mock_session.rollback.assert_called_once()

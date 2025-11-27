@@ -6,7 +6,7 @@ from unittest.mock import Mock, MagicMock, patch, AsyncMock
 from uuid import uuid4
 
 from finquest_api.routers.modules import get_module, submit_module_attempt
-from finquest_api.db.models import User, Module, ModuleVersion, ModuleQuestion, ModuleChoice, ModuleAttempt, ModuleCompletion, Suggestion
+from finquest_api.db.models import User, Module, ModuleVersion, ModuleQuestion, ModuleChoice, ModuleAttempt, ModuleCompletion
 from finquest_api.schemas import ModuleAttemptRequest
 
 

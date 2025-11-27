@@ -1,7 +1,6 @@
 """
 Tests for FX service
 """
-import pytest
 from unittest.mock import Mock, MagicMock, patch
 from decimal import Decimal
 from datetime import datetime, timedelta, timezone

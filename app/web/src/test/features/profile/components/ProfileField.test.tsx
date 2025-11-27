@@ -25,7 +25,7 @@ describe('ProfileField', () => {
 
     it('returns null when value is null', () => {
         const { container } = render(
-            <ProfileField label="Test" value={null as any} icon={<IconUser />} />
+            <ProfileField label="Test" value={null as unknown as string | number} icon={<IconUser />} />
         )
         const textContent = container.textContent || ''
         expect(textContent).not.toContain('Test')

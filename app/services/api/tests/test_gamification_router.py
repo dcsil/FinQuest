@@ -4,7 +4,7 @@ Tests for gamification router endpoints
 import pytest
 from unittest.mock import Mock, MagicMock, patch
 from uuid import uuid4
-from datetime import date, datetime
+from datetime import datetime
 
 from finquest_api.routers.gamification import (
     handle_gamification_event,
@@ -12,7 +12,7 @@ from finquest_api.routers.gamification import (
     get_all_badges,
     GamificationEventRequest,
 )
-from finquest_api.db.models import User, UserGamificationStats, BadgeDefinition, UserBadge
+from finquest_api.db.models import User, UserGamificationStats, BadgeDefinition
 
 
 @pytest.fixture

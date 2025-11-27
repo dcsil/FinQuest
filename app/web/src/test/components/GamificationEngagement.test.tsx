@@ -85,6 +85,7 @@ describe('GamificationEngagement', () => {
                 reason: 'Test reason',
                 confidence: 0.8,
                 status: 'pending',
+                metadata: null,
             },
         ]
         render(<GamificationEngagement suggestions={suggestions} />)
@@ -102,6 +103,7 @@ describe('GamificationEngagement', () => {
                 reason: 'Test reason',
                 confidence: 0.8,
                 status: 'pending',
+                metadata: null,
             },
         ]
         render(<GamificationEngagement suggestions={suggestions} />)
@@ -121,6 +123,7 @@ describe('GamificationEngagement', () => {
                 reason: 'Test reason',
                 confidence: 0.8,
                 status: 'pending',
+                metadata: null,
             },
         ]
         render(<GamificationEngagement suggestions={suggestions} />)
@@ -140,6 +143,7 @@ describe('GamificationEngagement', () => {
                 reason: 'Test reason',
                 confidence: 0.8,
                 status: 'pending',
+                metadata: null,
             },
         ]
         render(<GamificationEngagement suggestions={suggestions} />)

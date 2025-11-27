@@ -1,8 +1,7 @@
 """
 Tests for __init__.py main function
 """
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from finquest_api import main, __version__
 
 
