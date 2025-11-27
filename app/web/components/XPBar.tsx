@@ -1,7 +1,7 @@
 /**
  * XP Progress Bar Component (Compact version for navbar)
  */
-import { Progress, Text, Group, useMantineColorScheme, Tooltip } from '@mantine/core';
+import { Progress, Text, Group, useMantineColorScheme, Tooltip, Skeleton } from '@mantine/core';
 import { useGamification } from '@/contexts/GamificationContext';
 
 interface XPBarProps {
@@ -9,9 +9,27 @@ interface XPBarProps {
 }
 
 export const XPBar = ({ compact = false }: XPBarProps) => {
-    const { totalXp, level, xpToNextLevel } = useGamification();
+    const { totalXp, level, xpToNextLevel, loading } = useGamification();
     const { colorScheme } = useMantineColorScheme();
     const isDark = colorScheme === 'dark';
+    
+    if (loading) {
+        if (compact) {
+            return (
+                <Group gap={4} style={{ minWidth: '140px' }}>
+                    <Skeleton height={16} width={50} radius="sm" />
+                    <Skeleton height={8} style={{ flex: 1, minWidth: '60px' }} radius="xl" />
+                </Group>
+            );
+        }
+        return (
+            <Group gap="xs" style={{ minWidth: '200px' }}>
+                <Skeleton height={16} width={60} radius="sm" />
+                <Skeleton height={12} style={{ flex: 1 }} radius="xl" />
+                <Skeleton height={14} width={80} radius="sm" />
+            </Group>
+        );
+    }
 
     // Calculate XP thresholds based on level
     const getLevelThreshold = (lvl: number): number => {

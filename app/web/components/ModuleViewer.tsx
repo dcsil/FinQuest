@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Paper,
     Title,
@@ -45,6 +45,12 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
     const [quizCompleted, setQuizCompleted] = useState(false);
+    
+    // Reset selected answer when question changes
+    useEffect(() => {
+        setSelectedAnswer(null);
+        setShowResult(false);
+    }, [currentQuestion]);
 
     const handleAnswerSubmit = () => {
         if (!selectedAnswer) return;
@@ -62,10 +68,12 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
     };
 
     const handleNextQuestion = () => {
+        // Clear selected answer first
+        setSelectedAnswer(null);
+        setShowResult(false);
+        
         if (currentQuestion < content.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
-            setSelectedAnswer(null);
-            setShowResult(false);
         } else {
             setQuizCompleted(true);
             if (onComplete) {
@@ -182,6 +190,7 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                     <Text size="xl" fw={500}>{question.question}</Text>
 
                     <Radio.Group
+                        key={`question-${currentQuestion}`}
                         value={selectedAnswer || ""}
                         onChange={setSelectedAnswer}
                     >
@@ -204,7 +213,17 @@ export const ModuleViewer = ({ content, onComplete }: ModuleViewerProps) => {
                                             borderRadius: '8px',
                                             backgroundColor: showResult && choice.isCorrect 
                                                 ? 'var(--mantine-color-green-light)'
-                                                : 'transparent'
+                                                : 'transparent',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        },
+                                        radio: {
+                                            marginTop: 0,
+                                        },
+                                        label: {
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            paddingLeft: '8px',
                                         }
                                     }}
                                 />

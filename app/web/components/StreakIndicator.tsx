@@ -2,7 +2,7 @@
  * Streak Indicator Component
  */
 import { motion } from 'framer-motion';
-import { Group, Text, useMantineColorScheme, Tooltip } from '@mantine/core';
+import { Group, Text, useMantineColorScheme, Tooltip, Skeleton } from '@mantine/core';
 import { IconFlame } from '@tabler/icons-react';
 import { useGamification } from '@/contexts/GamificationContext';
 
@@ -11,9 +11,27 @@ interface StreakIndicatorProps {
 }
 
 export const StreakIndicator = ({ compact = false }: StreakIndicatorProps) => {
-    const { currentStreak } = useGamification();
+    const { currentStreak, loading } = useGamification();
     const { colorScheme } = useMantineColorScheme();
     const isDark = colorScheme === 'dark';
+    
+    // Show skeleton if loading
+    if (loading) {
+        if (compact) {
+            return (
+                <Group gap={4}>
+                    <Skeleton height={16} width={20} radius="sm" />
+                    <Skeleton height={16} width={12} radius="sm" />
+                </Group>
+            );
+        }
+        return (
+            <Group gap={4}>
+                <Skeleton height={20} width={20} radius="sm" />
+                <Skeleton height={16} width={80} radius="sm" />
+            </Group>
+        );
+    }
 
     if (currentStreak === 0) {
         return null;

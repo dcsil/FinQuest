@@ -65,10 +65,34 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const targetPositionRef = useRef({ x: 0, y: 0 });
     const animationFrameRef = useRef<number | null>(null);
+    const firstIncompleteModuleRef = useRef<HTMLDivElement>(null);
     const isDark = colorScheme === 'dark';
 
     // Keep suggestions in their original order to preserve pathway sequence
     const sortedSuggestions = [...suggestions];
+    const hasScrolledRef = useRef(false);
+    const prevSuggestionsLengthRef = useRef(suggestions.length);
+    
+    // Scroll to first incomplete module when navigating to the page
+    useEffect(() => {
+        // Reset scroll flag if suggestions changed significantly (new data loaded)
+        if (prevSuggestionsLengthRef.current !== suggestions.length) {
+            hasScrolledRef.current = false;
+            prevSuggestionsLengthRef.current = suggestions.length;
+        }
+        
+        if (firstIncompleteModuleRef.current && !hasScrolledRef.current && suggestions.length > 0) {
+            // Small delay to ensure DOM is ready
+            const timer = setTimeout(() => {
+                firstIncompleteModuleRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+                hasScrolledRef.current = true;
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [suggestions]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -175,8 +199,16 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
                             }
                         };
 
+                        // Check if this is the first incomplete module
+                        const isFirstIncomplete = !isCompleted && 
+                            sortedSuggestions.slice(0, index).every(s => s.status === "completed");
+                        
                         return (
-                            <Box key={suggestion.id} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+                            <Box 
+                                key={suggestion.id} 
+                                ref={isFirstIncomplete ? firstIncompleteModuleRef : null}
+                                style={{ position: 'relative', width: '100%', maxWidth: '600px' }}
+                            >
                                 {/* Module Card */}
                                 <Card
                                     shadow={isCompleted ? "xs" : "md"}

@@ -2,7 +2,7 @@
  * Application Navigation Component
  */
 import { useState, useEffect } from 'react';
-import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge, Box } from '@mantine/core';
+import { AppShell, Group, Button, Text, Container, Menu, Avatar, ActionIcon, Tooltip, Badge, Box, Skeleton } from '@mantine/core';
 import { useMantineColorScheme } from '@mantine/core';
 import { IconLogout, IconUser, IconSun, IconMoon } from '@tabler/icons-react';
 import Image from 'next/image';
@@ -46,7 +46,7 @@ const getLevelBorderColor = (level: number): string => {
 export const AppNav = () => {
     const router = useRouter();
     const { user, signOut } = useAuth();
-    const { level } = useGamification();
+    const { level, loading } = useGamification();
 
     const handleSignOut = async () => {
         await signOut();
@@ -95,38 +95,56 @@ export const AppNav = () => {
                         <Menu shadow="md" width={200} position="bottom-end">
                             <Menu.Target>
                                 <Box style={{ position: 'relative' }}>
-                                    <Avatar
-                                        src={null}
-                                        alt={user?.email || 'User'}
-                                        radius="xl"
-                                        style={{
-                                            border: `1px solid ${getLevelBorderColor(level)}`,
-                                            boxShadow: level >= 7 ? `0 0 8px ${getLevelBorderColor(level)}` : 'none',
-                                        }}
-                                    >
-                                        {user?.email?.charAt(0).toUpperCase() || 'U'}
-                                    </Avatar>
-                                    <Badge
-                                        size="xs"
-                                        radius="xl"
-                                        style={{
-                                            position: 'absolute',
-                                            bottom: -6,
-                                            right: -6,
-                                            border: `2px solid white`,
-                                            background: getLevelBorderColor(level),
-                                            fontWeight: 700,
-                                            fontSize: '10px',
-                                            color: level >= 7 ? '#000' : '#fff',
-                                            minWidth: '20px',
-                                            height: '20px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        {level}
-                                    </Badge>
+                                    {loading ? (
+                                        <>
+                                            <Skeleton height={40} width={40} radius="xl" />
+                                            <Skeleton
+                                                height={20}
+                                                width={20}
+                                                radius="xl"
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: -6,
+                                                    right: -6,
+                                                }}
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Avatar
+                                                src={null}
+                                                alt={user?.email || 'User'}
+                                                radius="xl"
+                                                style={{
+                                                    border: `1px solid ${getLevelBorderColor(level)}`,
+                                                    boxShadow: level >= 7 ? `0 0 8px ${getLevelBorderColor(level)}` : 'none',
+                                                }}
+                                            >
+                                                {user?.email?.charAt(0).toUpperCase() || 'U'}
+                                            </Avatar>
+                                            <Badge
+                                                size="xs"
+                                                radius="xl"
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: -6,
+                                                    right: -6,
+                                                    border: `2px solid white`,
+                                                    background: getLevelBorderColor(level),
+                                                    fontWeight: 700,
+                                                    fontSize: '10px',
+                                                    color: level >= 7 ? '#000' : '#fff',
+                                                    minWidth: '20px',
+                                                    height: '20px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
+                                                {level}
+                                            </Badge>
+                                        </>
+                                    )}
                                 </Box>
                             </Menu.Target>
                             <Menu.Dropdown>

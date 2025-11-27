@@ -70,6 +70,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
+        setLoading(true);
         try {
             const data = await gamificationApi.getState();
             setState(data);
@@ -82,6 +83,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if (user) {
+            setLoading(true);
             refreshState();
         } else {
             setLoading(false);
