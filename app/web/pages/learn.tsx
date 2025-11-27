@@ -88,7 +88,7 @@ const Learn = () => {
             <AppShell header={{ height: 70 }}>
                 <AppNav />
                 <AppShell.Main>
-                    <Container size="xl" py="xl">
+                    <Container size="xl" pt="xl">
                         <Stack gap="xl">
                             <div>
                                 <Title order={1}>Your Learning Path</Title>

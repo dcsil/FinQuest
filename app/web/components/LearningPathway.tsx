@@ -116,278 +116,288 @@ export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
 
     return (
         <Box
-            ref={containerRef}
             style={{
                 position: 'relative',
-                padding: '2rem 0',
-                backgroundImage: isDark
-                    ? `
-                        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
-                    `
-                    : `
-                        linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-                    `,
-                backgroundSize: '20px 20px',
-                backgroundPosition: `${backgroundPosition.x}px ${backgroundPosition.y}px`,
+                width: '100vw',
+                marginLeft: 'calc(-50vw + 50%)',
             }}
         >
-            <Stack gap={0} align="center">
-                {sortedSuggestions.map((suggestion, index) => {
-                    const isCompleted = suggestion.status === "completed";
-                    const isLast = index === sortedSuggestions.length - 1;
-                    const nextSuggestion = sortedSuggestions[index + 1];
-                    const nextIsCompleted = nextSuggestion?.status === "completed";
-                    const color = getColor(suggestion.metadata?.type, isCompleted);
-                    const icon = getIcon(suggestion.metadata?.type);
+            <Box
+                ref={containerRef}
+                style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingTop: '2rem',
+                    backgroundImage: isDark
+                        ? `
+                            linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                            linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+                        `
+                        : `
+                            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+                        `,
+                    backgroundSize: '20px 20px',
+                    backgroundPosition: `${backgroundPosition.x}px ${backgroundPosition.y}px`,
+                }}
+            >
+                <Stack gap={0} align="center">
+                    {sortedSuggestions.map((suggestion, index) => {
+                        const isCompleted = suggestion.status === "completed";
+                        const isLast = index === sortedSuggestions.length - 1;
+                        const nextSuggestion = sortedSuggestions[index + 1];
+                        const nextIsCompleted = nextSuggestion?.status === "completed";
+                        const color = getColor(suggestion.metadata?.type, isCompleted);
+                        const icon = getIcon(suggestion.metadata?.type);
 
-                    // Determine line color based on completion status and theme
-                    const getLineGradient = () => {
-                        if (isDark) {
-                            if (isCompleted && nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
-                            } else if (isCompleted && !nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #51cf66, #4dabf7)'; // Transition from completed to active (lighter blue for dark mode)
-                            } else if (!isCompleted && nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #4dabf7, #51cf66)'; // Transition from active to completed
+                        // Determine line color based on completion status and theme
+                        const getLineGradient = () => {
+                            if (isDark) {
+                                if (isCompleted && nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
+                                } else if (isCompleted && !nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #51cf66, #4dabf7)'; // Transition from completed to active (lighter blue for dark mode)
+                                } else if (!isCompleted && nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #4dabf7, #51cf66)'; // Transition from active to completed
+                                } else {
+                                    return 'linear-gradient(to bottom, #4dabf7, #74c0fc)'; // Active path (lighter blue for dark mode)
+                                }
                             } else {
-                                return 'linear-gradient(to bottom, #4dabf7, #74c0fc)'; // Active path (lighter blue for dark mode)
+                                if (isCompleted && nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
+                                } else if (isCompleted && !nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #51cf66, #228be6)'; // Transition from completed to active
+                                } else if (!isCompleted && nextIsCompleted) {
+                                    return 'linear-gradient(to bottom, #228be6, #51cf66)'; // Transition from active to completed
+                                } else {
+                                    return 'linear-gradient(to bottom, #228be6, #74c0fc)'; // Active path
+                                }
                             }
-                        } else {
-                            if (isCompleted && nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
-                            } else if (isCompleted && !nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #51cf66, #228be6)'; // Transition from completed to active
-                            } else if (!isCompleted && nextIsCompleted) {
-                                return 'linear-gradient(to bottom, #228be6, #51cf66)'; // Transition from active to completed
-                            } else {
-                                return 'linear-gradient(to bottom, #228be6, #74c0fc)'; // Active path
-                            }
-                        }
-                    };
+                        };
 
-                    return (
-                        <Box key={suggestion.id} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
-                            {/* Module Card */}
+                        return (
+                            <Box key={suggestion.id} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+                                {/* Module Card */}
+                                <Card
+                                    shadow={isCompleted ? "xs" : "md"}
+                                    padding="lg"
+                                    radius="md"
+                                    withBorder
+                                    style={{
+                                        position: 'relative',
+                                        zIndex: 2,
+                                        opacity: isCompleted ? 0.7 : 1,
+                                        cursor: isCompleted ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        backgroundColor: isDark
+                                            ? (isCompleted ? theme.colors.dark[7] : theme.colors.dark[6])
+                                            : (isCompleted ? '#f8f9fa' : 'white'),
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isCompleted) {
+                                            e.currentTarget.style.transform = 'translateY(-4px)';
+                                            e.currentTarget.style.boxShadow = isDark
+                                                ? '0 8px 16px rgba(0, 0, 0, 0.4)'
+                                                : '0 8px 16px rgba(0, 0, 0, 0.15)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '';
+                                    }}
+                                >
+                                    <Box style={{ position: 'relative', zIndex: 1 }}>
+                                        <Stack gap="md">
+                                            {/* Header */}
+                                            <Group justify="space-between" align="flex-start" style={{ position: 'relative', zIndex: 1 }}>
+                                                <Group gap="md">
+                                                    <ThemeIcon
+                                                        color={color}
+                                                        variant={isCompleted ? "light" : "filled"}
+                                                        size="xl"
+                                                        radius="md"
+                                                        style={{
+                                                            position: 'relative',
+                                                        }}
+                                                    >
+                                                        {icon}
+                                                        {isCompleted && (
+                                                            <ThemeIcon
+                                                                size="sm"
+                                                                color="green"
+                                                                variant="filled"
+                                                                radius="xl"
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    bottom: '-4px',
+                                                                    right: '-4px',
+                                                                    border: `2px solid ${isDark ? theme.colors.dark[6] : 'white'}`,
+                                                                }}
+                                                            >
+                                                                <IconCheck size={12} />
+                                                            </ThemeIcon>
+                                                        )}
+                                                    </ThemeIcon>
+                                                    <div>
+                                                        <Text
+                                                            fw={600}
+                                                            size="lg"
+                                                            c={isCompleted
+                                                                ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
+                                                                : (isDark ? theme.colors.dark[0] : theme.colors.dark[9])
+                                                            }
+                                                        >
+                                                            {toTitleCase(suggestion.metadata?.topic || "General Learning")}
+                                                        </Text>
+                                                        {isCompleted && (
+                                                            <Badge color="green" variant={isDark ? "light" : "light"} size="sm" mt={4}>
+                                                                Completed
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                </Group>
+                                                {!isCompleted && suggestion.confidence && (
+                                                    <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
+                                                        {getConfidenceLabel(suggestion.confidence).label}
+                                                    </Badge>
+                                                )}
+                                            </Group>
+
+                                            {/* Description */}
+                                            <Text
+                                                size="sm"
+                                                c={isCompleted
+                                                    ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
+                                                    : (isDark ? theme.colors.dark[1] : theme.colors.dark[7])
+                                                }
+                                                style={{ lineHeight: 1.6 }}
+                                            >
+                                                {suggestion.reason}
+                                            </Text>
+
+                                            {/* Action Button */}
+                                            {isCompleted ? (
+                                                <Button
+                                                    variant={isDark ? "subtle" : "light"}
+                                                    color="gray"
+                                                    fullWidth
+                                                    disabled
+                                                    leftSection={<IconCheck size={16} />}
+                                                    style={{
+                                                        color: isDark ? theme.colors.dark[2] : theme.colors.gray[6],
+                                                    }}
+                                                >
+                                                    Module Completed
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant={isDark ? "light" : "light"}
+                                                    color={color}
+                                                    fullWidth
+                                                    rightSection={<IconArrowRight size={14} />}
+                                                    onClick={() => {
+                                                        if (suggestion.moduleId) {
+                                                            router.push(`/modules/${suggestion.moduleId}`);
+                                                        }
+                                                    }}
+                                                >
+                                                    Start Module
+                                                </Button>
+                                            )}
+                                        </Stack>
+                                    </Box>
+                                </Card>
+
+                                {/* Connecting line - positioned right after the card */}
+                                {!isLast && (
+                                    <Box
+                                        style={{
+                                            position: 'relative',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: '4px',
+                                            height: '80px',
+                                            marginTop: 0,
+                                            marginBottom: 0,
+                                            background: getLineGradient(),
+                                            zIndex: 1,
+                                            borderRadius: '2px',
+                                            boxShadow: isDark
+                                                ? (isCompleted || nextIsCompleted
+                                                    ? '0 0 8px rgba(81, 207, 102, 0.4)'
+                                                    : '0 0 8px rgba(77, 171, 247, 0.4)')
+                                                : (isCompleted || nextIsCompleted
+                                                    ? '0 0 8px rgba(81, 207, 102, 0.3)'
+                                                    : '0 0 8px rgba(34, 139, 230, 0.3)'),
+                                            pointerEvents: 'none',
+                                        }}
+                                    />
+                                )}
+                            </Box>
+                        );
+                    })}
+
+                    {/* Dashed line and message at the end */}
+                    {sortedSuggestions.length > 0 && (
+                        <Box style={{ position: 'relative', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
+                            {/* Dashed connecting line */}
+                            <Box
+                                style={{
+                                    position: 'relative',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: '4px',
+                                    height: '80px',
+                                    marginTop: 0,
+                                    marginBottom: 0,
+                                    border: `2px dashed ${isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)'}`,
+                                    background: 'transparent',
+                                    zIndex: 1,
+                                    borderRadius: '2px',
+                                    pointerEvents: 'none',
+                                }}
+                            />
+
+                            {/* Message card */}
                             <Card
-                                shadow={isCompleted ? "xs" : "md"}
+                                shadow="sm"
                                 padding="lg"
                                 radius="md"
                                 withBorder
                                 style={{
                                     position: 'relative',
                                     zIndex: 2,
-                                    opacity: isCompleted ? 0.7 : 1,
-                                    cursor: isCompleted ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    backgroundColor: isDark
-                                        ? (isCompleted ? theme.colors.dark[7] : theme.colors.dark[6])
-                                        : (isCompleted ? '#f8f9fa' : 'white'),
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isCompleted) {
-                                        e.currentTarget.style.transform = 'translateY(-4px)';
-                                        e.currentTarget.style.boxShadow = isDark
-                                            ? '0 8px 16px rgba(0, 0, 0, 0.4)'
-                                            : '0 8px 16px rgba(0, 0, 0, 0.15)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = '';
+                                    marginTop: '20px',
+                                    marginBottom: '5rem',
+                                    backgroundColor: isDark ? theme.colors.dark[6] : '#f8f9fa',
+                                    borderStyle: 'dashed',
+                                    borderWidth: '2px',
+                                    borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
                                 }}
                             >
-                                <Box style={{ position: 'relative', zIndex: 1 }}>
-                                    <Stack gap="md">
-                                        {/* Header */}
-                                        <Group justify="space-between" align="flex-start" style={{ position: 'relative', zIndex: 1 }}>
-                                            <Group gap="md">
-                                                <ThemeIcon
-                                                    color={color}
-                                                    variant={isCompleted ? "light" : "filled"}
-                                                    size="xl"
-                                                    radius="md"
-                                                    style={{
-                                                        position: 'relative',
-                                                    }}
-                                                >
-                                                    {icon}
-                                                    {isCompleted && (
-                                                        <ThemeIcon
-                                                            size="sm"
-                                                            color="green"
-                                                            variant="filled"
-                                                            radius="xl"
-                                                            style={{
-                                                                position: 'absolute',
-                                                                bottom: '-4px',
-                                                                right: '-4px',
-                                                                border: `2px solid ${isDark ? theme.colors.dark[6] : 'white'}`,
-                                                            }}
-                                                        >
-                                                            <IconCheck size={12} />
-                                                        </ThemeIcon>
-                                                    )}
-                                                </ThemeIcon>
-                                                <div>
-                                                    <Text
-                                                        fw={600}
-                                                        size="lg"
-                                                        c={isCompleted
-                                                            ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
-                                                            : (isDark ? theme.colors.dark[0] : theme.colors.dark[9])
-                                                        }
-                                                    >
-                                                        {toTitleCase(suggestion.metadata?.topic || "General Learning")}
-                                                    </Text>
-                                                    {isCompleted && (
-                                                        <Badge color="green" variant={isDark ? "light" : "light"} size="sm" mt={4}>
-                                                            Completed
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </Group>
-                                            {!isCompleted && suggestion.confidence && (
-                                                <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
-                                                    {getConfidenceLabel(suggestion.confidence).label}
-                                                </Badge>
-                                            )}
-                                        </Group>
-
-                                        {/* Description */}
-                                        <Text
-                                            size="sm"
-                                            c={isCompleted
-                                                ? (isDark ? theme.colors.dark[2] : theme.colors.gray[6])
-                                                : (isDark ? theme.colors.dark[1] : theme.colors.dark[7])
-                                            }
-                                            style={{ lineHeight: 1.6 }}
-                                        >
-                                            {suggestion.reason}
-                                        </Text>
-
-                                        {/* Action Button */}
-                                        {isCompleted ? (
-                                            <Button
-                                                variant={isDark ? "subtle" : "light"}
-                                                color="gray"
-                                                fullWidth
-                                                disabled
-                                                leftSection={<IconCheck size={16} />}
-                                                style={{
-                                                    color: isDark ? theme.colors.dark[2] : theme.colors.gray[6],
-                                                }}
-                                            >
-                                                Module Completed
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant={isDark ? "light" : "light"}
-                                                color={color}
-                                                fullWidth
-                                                rightSection={<IconArrowRight size={14} />}
-                                                onClick={() => {
-                                                    if (suggestion.moduleId) {
-                                                        router.push(`/modules/${suggestion.moduleId}`);
-                                                    }
-                                                }}
-                                            >
-                                                Start Module
-                                            </Button>
-                                        )}
-                                    </Stack>
-                                </Box>
+                                <Stack gap="sm" align="center">
+                                    <ThemeIcon
+                                        color="gray"
+                                        variant="light"
+                                        size="lg"
+                                        radius="md"
+                                    >
+                                        <IconBook size={20} />
+                                    </ThemeIcon>
+                                    <Text
+                                        size="sm"
+                                        c={isDark ? theme.colors.dark[2] : theme.colors.gray[7]}
+                                        ta="center"
+                                        style={{ lineHeight: 1.6 }}
+                                    >
+                                        More modules will be generated automatically after you complete the existing ones.
+                                    </Text>
+                                </Stack>
                             </Card>
-
-                            {/* Connecting line - positioned right after the card */}
-                            {!isLast && (
-                                <Box
-                                    style={{
-                                        position: 'relative',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        width: '4px',
-                                        height: '80px',
-                                        marginTop: 0,
-                                        marginBottom: 0,
-                                        background: getLineGradient(),
-                                        zIndex: 1,
-                                        borderRadius: '2px',
-                                        boxShadow: isDark
-                                            ? (isCompleted || nextIsCompleted
-                                                ? '0 0 8px rgba(81, 207, 102, 0.4)'
-                                                : '0 0 8px rgba(77, 171, 247, 0.4)')
-                                            : (isCompleted || nextIsCompleted
-                                                ? '0 0 8px rgba(81, 207, 102, 0.3)'
-                                                : '0 0 8px rgba(34, 139, 230, 0.3)'),
-                                        pointerEvents: 'none',
-                                    }}
-                                />
-                            )}
                         </Box>
-                    );
-                })}
-
-                {/* Dashed line and message at the end */}
-                {sortedSuggestions.length > 0 && (
-                    <Box style={{ position: 'relative', width: '100%', maxWidth: '600px', marginTop: '20px' }}>
-                        {/* Dashed connecting line */}
-                        <Box
-                            style={{
-                                position: 'relative',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                width: '4px',
-                                height: '80px',
-                                marginTop: 0,
-                                marginBottom: 0,
-                                border: `2px dashed ${isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)'}`,
-                                background: 'transparent',
-                                zIndex: 1,
-                                borderRadius: '2px',
-                                pointerEvents: 'none',
-                            }}
-                        />
-
-                        {/* Message card */}
-                        <Card
-                            shadow="sm"
-                            padding="lg"
-                            radius="md"
-                            withBorder
-                            style={{
-                                position: 'relative',
-                                zIndex: 2,
-                                marginTop: '20px',
-                                backgroundColor: isDark ? theme.colors.dark[6] : '#f8f9fa',
-                                borderStyle: 'dashed',
-                                borderWidth: '2px',
-                                borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
-                            }}
-                        >
-                            <Stack gap="sm" align="center">
-                                <ThemeIcon
-                                    color="gray"
-                                    variant="light"
-                                    size="lg"
-                                    radius="md"
-                                >
-                                    <IconBook size={20} />
-                                </ThemeIcon>
-                                <Text
-                                    size="sm"
-                                    c={isDark ? theme.colors.dark[2] : theme.colors.gray[7]}
-                                    ta="center"
-                                    style={{ lineHeight: 1.6 }}
-                                >
-                                    More modules will be generated automatically after you complete the existing ones.
-                                </Text>
-                            </Stack>
-                        </Card>
-                    </Box>
-                )}
-            </Stack>
+                    )}
+                </Stack>
+            </Box>
         </Box>
     );
 };
