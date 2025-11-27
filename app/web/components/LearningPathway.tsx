@@ -1,0 +1,209 @@
+import { Card, Text, Button, Badge, Group, ThemeIcon, Stack, Box } from "@mantine/core";
+import { IconBook, IconChartBar, IconAlertTriangle, IconArrowRight, IconCheck } from "@tabler/icons-react";
+import type { Suggestion } from "@/types/learning";
+import { useRouter } from "next/router";
+
+interface LearningPathwayProps {
+    suggestions: Suggestion[];
+}
+
+const getIcon = (type: string | undefined) => {
+    switch (type) {
+        case "investment":
+            return <IconChartBar size={24} />;
+        case "warning":
+            return <IconAlertTriangle size={24} />;
+        default:
+            return <IconBook size={24} />;
+    }
+};
+
+const getColor = (type: string | undefined, isCompleted: boolean) => {
+    if (isCompleted) return "gray";
+    switch (type) {
+        case "investment":
+            return "blue";
+        case "warning":
+            return "orange";
+        default:
+            return "teal";
+    }
+};
+
+const getConfidenceLabel = (confidence: number | null) => {
+    if (!confidence) return { label: 'Low Match', color: 'gray' };
+    if (confidence >= 0.8) return { label: 'High Match', color: 'green' };
+    if (confidence >= 0.5) return { label: 'Medium Match', color: 'yellow' };
+    return { label: 'Low Match', color: 'gray' };
+};
+
+export const LearningPathway = ({ suggestions }: LearningPathwayProps) => {
+    const router = useRouter();
+
+    // Keep suggestions in their original order to preserve pathway sequence
+    const sortedSuggestions = [...suggestions];
+
+    return (
+        <Box style={{ position: 'relative', padding: '2rem 0' }}>
+            <Stack gap={0} align="center">
+                {sortedSuggestions.map((suggestion, index) => {
+                    const isCompleted = suggestion.status === "completed";
+                    const isLast = index === sortedSuggestions.length - 1;
+                    const nextSuggestion = sortedSuggestions[index + 1];
+                    const nextIsCompleted = nextSuggestion?.status === "completed";
+                    const color = getColor(suggestion.metadata?.type, isCompleted);
+                    const icon = getIcon(suggestion.metadata?.type);
+
+                    // Determine line color based on completion status
+                    const getLineGradient = () => {
+                        if (isCompleted && nextIsCompleted) {
+                            return 'linear-gradient(to bottom, #51cf66, #69db7c)'; // Green for completed path
+                        } else if (isCompleted && !nextIsCompleted) {
+                            return 'linear-gradient(to bottom, #51cf66, #228be6)'; // Transition from completed to active
+                        } else if (!isCompleted && nextIsCompleted) {
+                            return 'linear-gradient(to bottom, #228be6, #51cf66)'; // Transition from active to completed
+                        } else {
+                            return 'linear-gradient(to bottom, #228be6, #74c0fc)'; // Active path
+                        }
+                    };
+
+                    return (
+                        <Box key={suggestion.id} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+                            {/* Connecting line */}
+                            {!isLast && (
+                                <Box
+                                    style={{
+                                        position: 'absolute',
+                                        left: '50%',
+                                        top: '100%',
+                                        transform: 'translateX(-50%)',
+                                        width: '4px',
+                                        height: '80px',
+                                        background: getLineGradient(),
+                                        zIndex: 0,
+                                        borderRadius: '2px',
+                                        boxShadow: isCompleted || nextIsCompleted 
+                                            ? '0 0 8px rgba(81, 207, 102, 0.3)' 
+                                            : '0 0 8px rgba(34, 139, 230, 0.3)',
+                                    }}
+                                />
+                            )}
+
+                            {/* Module Card */}
+                            <Card
+                                shadow={isCompleted ? "xs" : "md"}
+                                padding="lg"
+                                radius="md"
+                                withBorder
+                                style={{
+                                    position: 'relative',
+                                    zIndex: 1,
+                                    opacity: isCompleted ? 0.7 : 1,
+                                    cursor: isCompleted ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    background: isCompleted ? '#f8f9fa' : 'white',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isCompleted) {
+                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '';
+                                }}
+                            >
+                                <Stack gap="md">
+                                    {/* Header */}
+                                    <Group justify="space-between" align="flex-start">
+                                        <Group gap="md">
+                                            <ThemeIcon
+                                                color={color}
+                                                variant={isCompleted ? "light" : "filled"}
+                                                size="xl"
+                                                radius="md"
+                                                style={{
+                                                    position: 'relative',
+                                                }}
+                                            >
+                                                {icon}
+                                                {isCompleted && (
+                                                    <ThemeIcon
+                                                        size="sm"
+                                                        color="green"
+                                                        variant="filled"
+                                                        radius="xl"
+                                                        style={{
+                                                            position: 'absolute',
+                                                            bottom: '-4px',
+                                                            right: '-4px',
+                                                            border: '2px solid white',
+                                                        }}
+                                                    >
+                                                        <IconCheck size={12} />
+                                                    </ThemeIcon>
+                                                )}
+                                            </ThemeIcon>
+                                            <div>
+                                                <Text fw={600} size="lg" c={isCompleted ? "dimmed" : "dark"}>
+                                                    {suggestion.metadata?.topic || "General Learning"}
+                                                </Text>
+                                                {isCompleted && (
+                                                    <Badge color="green" variant="light" size="sm" mt={4}>
+                                                        Completed
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </Group>
+                                        {!isCompleted && suggestion.confidence && (
+                                            <Badge variant="light" color={getConfidenceLabel(suggestion.confidence).color}>
+                                                {getConfidenceLabel(suggestion.confidence).label}
+                                            </Badge>
+                                        )}
+                                    </Group>
+
+                                    {/* Description */}
+                                    <Text size="sm" c={isCompleted ? "dimmed" : "dark"} style={{ lineHeight: 1.6 }}>
+                                        {suggestion.reason}
+                                    </Text>
+
+                                    {/* Action Button */}
+                                    {isCompleted ? (
+                                        <Button
+                                            variant="light"
+                                            color="gray"
+                                            fullWidth
+                                            disabled
+                                            leftSection={<IconCheck size={16} />}
+                                        >
+                                            Module Completed
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="light"
+                                            color={color}
+                                            fullWidth
+                                            rightSection={<IconArrowRight size={14} />}
+                                            onClick={() => {
+                                                if (suggestion.moduleId) {
+                                                    router.push(`/modules/${suggestion.moduleId}`);
+                                                }
+                                            }}
+                                        >
+                                            Start Module
+                                        </Button>
+                                    )}
+                                </Stack>
+                            </Card>
+
+                            {/* Spacing between modules */}
+                            {!isLast && <Box h={80} />}
+                        </Box>
+                    );
+                })}
+            </Stack>
+        </Box>
+    );
+};
+

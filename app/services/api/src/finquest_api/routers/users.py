@@ -113,11 +113,12 @@ async def get_suggestions(
     If no suggestions exist, triggers generation in background and returns empty list.
     """
     try:
-        # Fetch existing suggestions
+        # Fetch existing suggestions (including completed ones to show in pathway)
+        # Order by creation time to preserve the natural sequence in the pathway
         suggestions = db.query(Suggestion).filter(
             Suggestion.user_id == user.id,
-            Suggestion.status == "shown"
-        ).order_by(Suggestion.confidence.desc()).all()
+            Suggestion.status.in_(["shown", "completed"])
+        ).order_by(Suggestion.created_at.asc()).all()
         
         # If no suggestions, generate them in background
         if not suggestions:
