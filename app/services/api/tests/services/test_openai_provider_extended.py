@@ -213,3 +213,4 @@ async def test_openai_parse_structured_output_invalid_json(monkeypatch):
     assert result.structured_output is None
 
 
+

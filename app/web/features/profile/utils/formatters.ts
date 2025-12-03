@@ -30,3 +30,4 @@ export const formatInvestmentAmount = (amount?: string): string | undefined => {
     return amountMap[amount] || amount;
 };
 
+

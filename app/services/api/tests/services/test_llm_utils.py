@@ -148,3 +148,4 @@ class TestDereferenceSchema:
         assert "$ref" in str(result["properties"]["user"])
 
 
+

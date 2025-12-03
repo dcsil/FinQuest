@@ -251,3 +251,4 @@ class TestGetAllBadges:
         assert result[1].earned is False
 
 
+

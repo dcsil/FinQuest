@@ -15,3 +15,4 @@ export const getUserInitial = (user: User | null | undefined): string => {
     return name.charAt(0).toUpperCase();
 };
 
+
