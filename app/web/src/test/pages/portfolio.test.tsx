@@ -6,7 +6,7 @@ import { usersApi } from '@/lib/api'
 import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio'
 import { useSnapshots } from '@/features/portfolio/hooks/useSnapshots'
 import type { PortfolioHoldingsResponse } from '@/types/portfolio'
-import type { Suggestion } from '@/types/learning'
+import type { TimeRange } from '@/components/ValueChart'
 
 const mockAuthContext = {
     user: { id: '1', email: 'test@example.com' },
@@ -61,7 +61,7 @@ const mockSnapshotsHook = {
         { asOf: '2024-01-02T00:00:00Z', totalValue: 10100 },
     ],
     showSkeleton: false,
-    timeRange: '1m',
+    timeRange: '1m' as TimeRange,
     setTimeRange: vi.fn(),
     loadSnapshots: vi.fn(),
 }
@@ -168,10 +168,10 @@ describe('Portfolio Page', () => {
     it('opens add position dialog when button is clicked', async () => {
         const user = userEvent.setup()
         render(<PortfolioPage />)
-        
+
         const addButton = screen.getByRole('button', { name: /add position/i })
         await user.click(addButton)
-        
+
         // Dialog should be opened (check for dialog content or state)
         expect(addButton).toBeInTheDocument()
     })
@@ -184,7 +184,7 @@ describe('Portfolio Page', () => {
 
     it('loads suggestions when portfolio is available', async () => {
         render(<PortfolioPage />)
-        
+
         await waitFor(() => {
             expect(usersApi.getSuggestions).toHaveBeenCalled()
         })
@@ -195,10 +195,9 @@ describe('Portfolio Page', () => {
         expect(screen.getByText('Asset Allocation')).toBeInTheDocument()
     })
 
-    it('handles time range change', async () => {
-        const user = userEvent.setup()
+    it('handles time range change', () => {
         render(<PortfolioPage />)
-        
+
         // The ValueChart component should handle time range changes
         // We verify the hook's setTimeRange is available
         expect(mockSnapshotsHook.setTimeRange).toBeDefined()

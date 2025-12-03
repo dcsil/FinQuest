@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event'
 import ModulePage from '@/pages/modules/[id]'
 import { mockRouter } from '../test-utils'
 import { modulesApi } from '@/lib/api'
-import { useGamificationEvents } from '@/hooks/useGamificationEvents'
-import type { ModuleContent } from '@/types/learning'
+import type { ModuleContent } from '@/components/ModuleViewer'
 
 const mockAuthContext = {
     user: { id: '1', email: 'test@example.com' },
@@ -20,24 +19,18 @@ const mockAuthContext = {
 const mockModule: ModuleContent = {
     id: 'module-1',
     title: 'Test Module',
-    description: 'Test Description',
-    content: [
+    body: 'Test Description\n\nThis is test content',
+    questions: [
         {
-            type: 'text',
-            content: 'This is test content',
+            question: 'What is a stock?',
+            choices: [
+                { text: 'A share of ownership', isCorrect: true },
+                { text: 'A bond', isCorrect: false },
+                { text: 'A mutual fund', isCorrect: false },
+            ],
+            explanation: 'A stock represents ownership in a company',
         },
     ],
-    quiz: {
-        questions: [
-            {
-                id: 'q1',
-                question: 'What is a stock?',
-                type: 'multiple_choice',
-                options: ['A share of ownership', 'A bond', 'A mutual fund'],
-                correctAnswer: 0,
-            },
-        ],
-    },
 }
 
 const mockGamificationEvents = {
@@ -86,7 +79,7 @@ describe('Module Page', () => {
 
     it('renders loading overlay initially', () => {
         vi.mocked(modulesApi.getModule).mockImplementation(
-            () => new Promise(() => {}) // Never resolves
+            () => new Promise(() => { }) // Never resolves
         )
         render(<ModulePage />)
         const loadingOverlay = document.querySelector('.mantine-LoadingOverlay-root')
@@ -95,11 +88,11 @@ describe('Module Page', () => {
 
     it('loads and displays module', async () => {
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(modulesApi.getModule).toHaveBeenCalledWith('module-1')
         })
-        
+
         await waitFor(() => {
             expect(screen.getByText('Test Module')).toBeInTheDocument()
         }, { timeout: 3000 })
@@ -108,7 +101,7 @@ describe('Module Page', () => {
     it('displays error when module fails to load', async () => {
         vi.mocked(modulesApi.getModule).mockRejectedValue(new Error('Module not found'))
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(screen.getByText('Module not found')).toBeInTheDocument()
         })
@@ -117,7 +110,7 @@ describe('Module Page', () => {
     it('shows back to learning button on error', async () => {
         vi.mocked(modulesApi.getModule).mockRejectedValue(new Error('Module not found'))
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             const backButton = screen.getByRole('button', { name: /back to learning/i })
             expect(backButton).toBeInTheDocument()
@@ -127,31 +120,30 @@ describe('Module Page', () => {
     it('navigates back to learn page when back button is clicked', async () => {
         const user = userEvent.setup()
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(screen.getByText('Test Module')).toBeInTheDocument()
         })
-        
+
         const backButton = screen.getByRole('button', { name: /back to learning path/i })
         await user.click(backButton)
-        
+
         expect(mockRouter.push).toHaveBeenCalledWith('/learn')
     })
 
     it('submits quiz attempt when module is completed', async () => {
         vi.mocked(modulesApi.submitAttempt).mockResolvedValue({
-            attemptId: 'attempt-1',
-            score: 1,
-            maxScore: 1,
-            passed: true,
+            attempt_id: 'attempt-1',
+            status: 'completed',
+            completed: true,
         })
-        
+
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(screen.getByText('Test Module')).toBeInTheDocument()
         })
-        
+
         // Simulate module completion (this would typically be triggered by ModuleViewer)
         // We can't directly trigger it without the ModuleViewer component, but we can verify
         // the handler is set up correctly
@@ -160,18 +152,17 @@ describe('Module Page', () => {
 
     it('triggers gamification events when quiz is passed', async () => {
         vi.mocked(modulesApi.submitAttempt).mockResolvedValue({
-            attemptId: 'attempt-1',
-            score: 1,
-            maxScore: 1,
-            passed: true,
+            attempt_id: 'attempt-1',
+            status: 'completed',
+            completed: true,
         })
-        
+
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(modulesApi.getModule).toHaveBeenCalled()
         })
-        
+
         // The gamification events would be triggered when the module is completed
         // This is tested indirectly through the component setup
         expect(mockGamificationEvents.triggerModuleCompleted).toBeDefined()
@@ -180,18 +171,17 @@ describe('Module Page', () => {
 
     it('does not trigger gamification events when quiz is failed', async () => {
         vi.mocked(modulesApi.submitAttempt).mockResolvedValue({
-            attemptId: 'attempt-1',
-            score: 0,
-            maxScore: 1,
-            passed: false,
+            attempt_id: 'attempt-1',
+            status: 'failed',
+            completed: false,
         })
-        
+
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(modulesApi.getModule).toHaveBeenCalled()
         })
-        
+
         // Gamification events should not be triggered for failed quizzes
         // This is verified by the component logic
         expect(modulesApi.submitAttempt).toBeDefined()
@@ -205,18 +195,18 @@ describe('Module Page', () => {
     })
 
     it('handles module completion with error', async () => {
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
         vi.mocked(modulesApi.submitAttempt).mockRejectedValue(new Error('Submission failed'))
-        
+
         render(<ModulePage />)
-        
+
         await waitFor(() => {
             expect(modulesApi.getModule).toHaveBeenCalled()
         })
-        
+
         // Error handling is tested through the component's error handling logic
         expect(consoleErrorSpy).toBeDefined()
-        
+
         consoleErrorSpy.mockRestore()
     })
 })

@@ -6,7 +6,7 @@ import { mockRouter } from '../test-utils'
 import { usersApi } from '@/lib/api'
 
 const mockAuthContext = {
-    user: null,
+    user: null as { id: string; email: string } | null,
     session: null,
     loading: false,
     signUp: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 vi.mock('next/image', () => ({
-    default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => {
+    default: ({ src, alt, ...props }: { src: string; alt: string;[key: string]: unknown }) => {
         // eslint-disable-next-line @next/next/no-img-element
         return <img src={src} alt={alt} {...props} />
     },
@@ -62,9 +62,9 @@ describe('Home Page', () => {
     it('redirects authenticated user with completed onboarding to dashboard', async () => {
         mockAuthContext.user = { id: '1', email: 'test@example.com' }
         vi.mocked(usersApi.getOnboardingStatus).mockResolvedValue({ completed: true })
-        
+
         render(<Home />)
-        
+
         await waitFor(() => {
             expect(usersApi.getOnboardingStatus).toHaveBeenCalled()
             expect(mockRouter.push).toHaveBeenCalledWith('/dashboard')
@@ -74,9 +74,9 @@ describe('Home Page', () => {
     it('redirects authenticated user without completed onboarding to onboarding', async () => {
         mockAuthContext.user = { id: '1', email: 'test@example.com' }
         vi.mocked(usersApi.getOnboardingStatus).mockResolvedValue({ completed: false })
-        
+
         render(<Home />)
-        
+
         await waitFor(() => {
             expect(usersApi.getOnboardingStatus).toHaveBeenCalled()
             expect(mockRouter.push).toHaveBeenCalledWith('/onboarding')
@@ -85,17 +85,17 @@ describe('Home Page', () => {
 
     it('redirects to onboarding on error checking onboarding status', async () => {
         mockAuthContext.user = { id: '1', email: 'test@example.com' }
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
         vi.mocked(usersApi.getOnboardingStatus).mockRejectedValue(new Error('API Error'))
-        
+
         render(<Home />)
-        
+
         await waitFor(() => {
             expect(usersApi.getOnboardingStatus).toHaveBeenCalled()
             expect(mockRouter.push).toHaveBeenCalledWith('/onboarding')
             expect(consoleErrorSpy).toHaveBeenCalled()
         })
-        
+
         consoleErrorSpy.mockRestore()
     })
 

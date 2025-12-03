@@ -40,17 +40,17 @@ describe('SignUpForm Component', () => {
     it('handles form input changes', async () => {
         const user = userEvent.setup()
         render(<SignUpForm />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
-        
+
         expect(fullNameInput).toHaveValue('John Doe')
         expect(emailInput).toHaveValue('test@example.com')
         expect(passwordInput).toHaveValue('password123')
@@ -61,17 +61,17 @@ describe('SignUpForm Component', () => {
         const user = userEvent.setup()
         vi.mocked(mockAuthContext.signUp).mockResolvedValue({ error: null })
         render(<SignUpForm />)
-        
+
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'differentpassword')
         await user.click(submitButton)
-        
+
         // Wait for validation to run - the key behavior is that signUp should NOT be called
         // PasswordInput components may not expose values properly in tests, but validation
         // should still prevent submission if values don't match
@@ -84,17 +84,17 @@ describe('SignUpForm Component', () => {
     it('shows error when password is too short', async () => {
         const user = userEvent.setup()
         render(<SignUpForm />)
-        
+
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, '12345')
         await user.type(confirmPasswordInput, '12345')
         await user.click(submitButton)
-        
+
         // Wait for validation to run - the key behavior is that signUp should NOT be called
         // PasswordInput components may not expose values properly in tests, but validation
         // should still prevent submission if password is too short
@@ -107,19 +107,19 @@ describe('SignUpForm Component', () => {
         const user = userEvent.setup()
         vi.mocked(mockAuthContext.signUp).mockResolvedValue({ error: null })
         render(<SignUpForm />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
         await user.click(submitButton)
-        
+
         await waitFor(() => {
             expect(mockAuthContext.signUp).toHaveBeenCalledWith('test@example.com', 'password123', 'John Doe')
         })
@@ -129,19 +129,19 @@ describe('SignUpForm Component', () => {
         const user = userEvent.setup()
         vi.mocked(mockAuthContext.signUp).mockResolvedValue({ error: null })
         render(<SignUpForm />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
         await user.click(submitButton)
-        
+
         await waitFor(() => {
             expect(screen.getByText(/account created successfully/i)).toBeInTheDocument()
         }, { timeout: 3000 })
@@ -152,23 +152,23 @@ describe('SignUpForm Component', () => {
         const onSuccess = vi.fn()
         vi.mocked(mockAuthContext.signUp).mockResolvedValue({ error: null })
         render(<SignUpForm onSuccess={onSuccess} />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
         await user.click(submitButton)
-        
+
         await waitFor(() => {
             expect(mockAuthContext.signUp).toHaveBeenCalled()
         })
-        
+
         // Wait for success and callback
         await waitFor(() => {
             expect(onSuccess).toHaveBeenCalled()
@@ -181,19 +181,19 @@ describe('SignUpForm Component', () => {
             error: { message: 'Email already exists' } as unknown as { message: string },
         })
         render(<SignUpForm />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
         await user.click(submitButton)
-        
+
         await waitFor(() => {
             expect(screen.getByText(/email already exists/i)).toBeInTheDocument()
         }, { timeout: 3000 })
@@ -205,32 +205,32 @@ describe('SignUpForm Component', () => {
         const signUpPromise = new Promise<{ error: null } | { error: { message: string } }>(resolve => {
             resolveSignUp = resolve
         })
-        vi.mocked(mockAuthContext.signUp).mockReturnValue(signUpPromise as any)
-        
+        vi.mocked(mockAuthContext.signUp).mockImplementation(() => signUpPromise)
+
         render(<SignUpForm />)
-        
+
         const fullNameInput = screen.getByTestId('signup-fullname-input')
         const emailInput = screen.getByTestId('signup-email-input')
         const passwordInput = screen.getByTestId('signup-password-input')
         const confirmPasswordInput = screen.getByTestId('signup-confirm-password-input')
         const submitButton = screen.getByTestId('signup-submit-button')
-        
+
         await user.type(fullNameInput, 'John Doe')
         await user.type(emailInput, 'test@example.com')
         await user.type(passwordInput, 'password123')
         await user.type(confirmPasswordInput, 'password123')
         await user.click(submitButton)
-        
+
         // Check that button shows loading state (disabled or has loading attribute)
         await waitFor(() => {
-            const isDisabled = submitButton.hasAttribute('disabled') || 
-                             submitButton.getAttribute('data-loading') === 'true' ||
-                             submitButton.classList.contains('mantine-Button-loading')
+            const isDisabled = submitButton.hasAttribute('disabled') ||
+                submitButton.getAttribute('data-loading') === 'true' ||
+                submitButton.classList.contains('mantine-Button-loading')
             expect(isDisabled).toBe(true)
         }, { timeout: 2000 })
-        
+
         resolveSignUp!({ error: null })
-        
+
         // After success, button should be disabled due to success state
         await waitFor(() => {
             // Button is disabled when success is true

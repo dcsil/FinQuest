@@ -15,8 +15,9 @@ vi.mock('@/contexts/GamificationContext', () => ({
 }))
 
 // Import after mocks
+import type { Router } from 'next/router'
 import App from '@/pages/_app'
-import { render, screen } from '../test-utils'
+import { render, screen, mockRouter } from '../test-utils'
 
 const MockComponent = () => <div data-testid="test-component">Test Component</div>
 
@@ -28,8 +29,8 @@ describe('_app.tsx', () => {
 
     it('renders App component with providers', () => {
         const pageProps = {}
-        render(<App Component={MockComponent} pageProps={pageProps} />)
-        
+        render(<App Component={MockComponent} pageProps={pageProps} router={mockRouter as unknown as Router} />)
+
         expect(screen.getByTestId('test-component')).toBeInTheDocument()
     })
 
@@ -38,9 +39,9 @@ describe('_app.tsx', () => {
         const TestComponent = (props: { testProp?: string }) => (
             <div data-testid="test-component">{props.testProp}</div>
         )
-        
-        render(<App Component={TestComponent} pageProps={pageProps} />)
-        
+
+        render(<App Component={TestComponent} pageProps={pageProps} router={mockRouter as unknown as Router} />)
+
         expect(screen.getByText('test-value')).toBeInTheDocument()
     })
 })

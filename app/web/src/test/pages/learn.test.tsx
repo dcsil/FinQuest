@@ -73,7 +73,7 @@ describe('Learn Page', () => {
 
     it('shows loading skeleton initially', () => {
         vi.mocked(usersApi.getSuggestions).mockImplementation(
-            () => new Promise(() => {}) // Never resolves
+            () => new Promise(() => { }) // Never resolves
         )
         render(<Learn />)
         const skeletons = document.querySelectorAll('.mantine-Skeleton-root')
@@ -82,45 +82,46 @@ describe('Learn Page', () => {
 
     it('loads and displays suggestions', async () => {
         render(<Learn />)
-        
+
         await waitFor(() => {
             expect(usersApi.getSuggestions).toHaveBeenCalled()
         })
-        
+
         await waitFor(() => {
-            expect(screen.queryAllByText(/based on your portfolio/i).length).toBeGreaterThan(0) ||
-            document.querySelector('.mantine-LearningPathway-root') !== null
+            const hasText = screen.queryAllByText(/based on your portfolio/i).length > 0
+            const hasPathway = document.querySelector('.mantine-LearningPathway-root') !== null
+            expect(hasText || hasPathway).toBe(true)
         }, { timeout: 3000 })
     })
 
     it('displays empty state when no suggestions', async () => {
         vi.mocked(usersApi.getSuggestions).mockResolvedValue([])
         render(<Learn />)
-        
+
         await waitFor(() => {
             expect(screen.getByText(/no learning modules available yet/i)).toBeInTheDocument()
         })
     })
 
     it('handles API errors gracefully', async () => {
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
         vi.mocked(usersApi.getSuggestions).mockRejectedValue(new Error('API Error'))
         render(<Learn />)
-        
+
         await waitFor(() => {
             expect(consoleErrorSpy).toHaveBeenCalled()
         })
-        
+
         consoleErrorSpy.mockRestore()
     })
 
     it('renders learning pathway component when suggestions exist', async () => {
         render(<Learn />)
-        
+
         await waitFor(() => {
             expect(usersApi.getSuggestions).toHaveBeenCalled()
         }, { timeout: 3000 })
-        
+
         // The LearningPathway component should be rendered
         // We check for the absence of empty state message
         await waitFor(() => {

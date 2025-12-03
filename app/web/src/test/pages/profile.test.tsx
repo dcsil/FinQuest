@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '../test-utils'
 import userEvent from '@testing-library/user-event'
 import ProfilePage from '@/pages/profile'
 import { useProfile } from '@/features/profile/hooks/useProfile'
-import { usersApi } from '@/lib/api'
 import type { UserProfile } from '@/types/user'
 
 const mockAuthContext = {
@@ -128,14 +127,14 @@ describe('Profile Page', () => {
     it.skip('allows editing country', async () => {
         const user = userEvent.setup()
         render(<ProfilePage />)
-        
+
         // Find the country field container and click it to enter edit mode
         const countryText = screen.getByText(/country/i)
         const countryContainer = countryText.closest('div[style*="cursor: pointer"]') || countryText.closest('div')
-        
+
         if (countryContainer) {
             await user.click(countryContainer)
-            
+
             await waitFor(() => {
                 // After clicking, should show the Select component
                 const combobox = screen.queryByRole('combobox')
@@ -156,17 +155,17 @@ describe('Profile Page', () => {
     it('saves country when save button is clicked', async () => {
         const user = userEvent.setup()
         render(<ProfilePage />)
-        
+
         const countryField = screen.getByTestId('country-field-display')
         await user.click(countryField)
-        
+
         await waitFor(() => {
             expect(screen.getByTestId('country-save-button')).toBeInTheDocument()
         })
-        
+
         const saveButton = screen.getByTestId('country-save-button')
         await user.click(saveButton)
-        
+
         await waitFor(() => {
             expect(mockProfileHook.updateProfile).toHaveBeenCalled()
         })
@@ -175,17 +174,17 @@ describe('Profile Page', () => {
     it('cancels country editing when cancel button is clicked', async () => {
         const user = userEvent.setup()
         render(<ProfilePage />)
-        
+
         const countryField = screen.getByTestId('country-field-display')
         await user.click(countryField)
-        
+
         await waitFor(() => {
             expect(screen.getByTestId('country-cancel-button')).toBeInTheDocument()
         })
-        
+
         const cancelButton = screen.getByTestId('country-cancel-button')
         await user.click(cancelButton)
-        
+
         await waitFor(() => {
             expect(screen.getByTestId('country-field-display')).toBeInTheDocument()
             expect(screen.queryByTestId('country-field-editing')).not.toBeInTheDocument()
@@ -194,7 +193,7 @@ describe('Profile Page', () => {
 
     it('loads profile on mount', async () => {
         render(<ProfilePage />)
-        
+
         await waitFor(() => {
             expect(mockProfileHook.loadProfile).toHaveBeenCalled()
         })
@@ -209,30 +208,30 @@ describe('Profile Page', () => {
 
     it('handles profile update errors', async () => {
         const user = userEvent.setup()
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
         vi.mocked(mockProfileHook.updateProfile).mockRejectedValue(new Error('Update failed'))
-        
+
         render(<ProfilePage />)
-        
+
         const countryField = screen.getByTestId('country-field-display')
         await user.click(countryField)
-        
+
         await waitFor(() => {
             expect(screen.getByTestId('country-save-button')).toBeInTheDocument()
         })
-        
+
         const saveButton = screen.getByTestId('country-save-button')
         await user.click(saveButton)
-        
+
         await waitFor(() => {
             expect(mockProfileHook.updateProfile).toHaveBeenCalled()
         })
-        
+
         // Error should be logged to console
         await waitFor(() => {
             expect(consoleErrorSpy).toHaveBeenCalled()
         }, { timeout: 2000 })
-        
+
         consoleErrorSpy.mockRestore()
     })
 })
