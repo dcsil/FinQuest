@@ -16,3 +16,4 @@ export const calculateDailyPLPercent = (totals: PortfolioTotals): number => {
     return (Number(totals.dailyPL) / previousValue) * 100;
 };
 
+

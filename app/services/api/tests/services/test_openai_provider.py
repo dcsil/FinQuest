@@ -178,3 +178,4 @@ async def test_openai_client_with_organization(monkeypatch):
     assert sent["headers"]["OpenAI-Organization"] == "org-123"
 
 
+
